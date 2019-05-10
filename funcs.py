@@ -42,16 +42,24 @@ def init_parent_bone(context):
     return(True, 'Ok!')
 
 def make_target_bone(context, name, height):
+    pass
+    # (1) testing
+    if not name:
+        return(False, 'Name not specified!')
+    if not height:
+        return(False, 'Height not specified!')
+    
+    # (2)
     pose_bones = context.selected_pose_bones
     if not pose_bones:
         return(False, 'Pose bones is not selected!')
     target_bone = pose_bones[0]
     
-    # get armature:root
+    # (3) get armature:root
     data = read_data()
     rig = bpy.data.objects[data['armature']]
     
-    # make bone
+    # (4) make bone
     head_position = tuple(target_bone.head)
     tail_position = (head_position[0], head_position[1], head_position[2]+height)
     
@@ -68,6 +76,7 @@ def make_target_bone(context, name, height):
     new_bone.parent = rig.data.edit_bones[data['parent_bone']]
     new_bone.use_deform = False
     
+    # (5) make R bone
     if name.endswith('.L'):
         new_name = '%s-%s' % (BONE_PREFIX, name.replace('.L', '.R'))
         if new_name in rig.data.edit_bones:
