@@ -108,7 +108,7 @@ def init_distance(context, distance_name):
     
     return(True, '%s - %s' % (distance_name, str(distance)))
 
-def make_target_bone(context, name, height, layer):
+def make_target_bone(context, name, height, layer, from_mirror='.L', to_mirror='.R'):
     pass
     # (1) testing
     if not name:
@@ -149,8 +149,8 @@ def make_target_bone(context, name, height, layer):
     new_bone.layers = layers
     
     # (5) make R bone
-    if name.endswith('.L'):
-        new_name = '%s-%s' % (BONE_PREFIX, name.replace('.L', '.R'))
+    if name.endswith(from_mirror):
+        new_name = '%s-%s' % (BONE_PREFIX, name.replace(from_mirror, to_mirror))
         if new_name in rig.data.edit_bones:
             bpy.ops.object.mode_set(mode='POSE')
             return(False, 'This name "%s" is not unique!' % new_name)
@@ -158,15 +158,23 @@ def make_target_bone(context, name, height, layer):
         new_bone.head = (-head_position[0], head_position[1], head_position[2])
         new_bone.tail = (-tail_position[0], tail_position[1], tail_position[2])
         new_bone.use_connect = False
-        new_bone.parent = rig.data.edit_bones[data['parent_bone'].replace('.L', '.R')]
+        new_bone.parent = rig.data.edit_bones[data['parent_bone'].replace(from_mirror, to_mirror)]
         new_bone.use_deform = False
         new_bone.layers = layers
         
     bpy.ops.object.mode_set(mode='POSE')
     
+    # (6) Clead text
+    for key in ['armature', 'parent_bone']:
+        del data[key]
+    write_data(data, clean=True)
+    
     return(True, 'Ok!')
 
-def make_shape_key(context, name):
+def make_shape_key(context, name, from_mirror='.L', to_mirror='.R'):
+    if not name:
+        return(False, 'Name not specified!')
+        
     new_name = '%s.%s' % (SHAPE_KEY_PREFIX, name)
     data = read_data()
     
@@ -185,10 +193,10 @@ def make_shape_key(context, name):
     # (3) Shape key
     if new_name in mesh.data.shape_keys.key_blocks:
         return(False, 'Shape Key with the same name("%s") already exists!' % name)
-    mesh.shape_key_add(name=new_name, from_mix=False)
+    new_shape_key = mesh.shape_key_add(name=new_name, from_mix=False)
     
     # (4) Drivers
-    # (4.1) targets
+    # (4.1) test Targets
     for key in ['target1', 'target2']:
         target = data.get(key)
         if not target:
@@ -200,7 +208,116 @@ def make_shape_key(context, name):
         bpy.ops.object.mode_set(mode='POSE')
         if not target[1] in armature.pose.bones:
             return(False, 'Bone with the same name("%s") not found!' % target[1])
-        
+    # (4.2) test Distances
+    on_distance = data.get('on_distance')
+    if on_distance==None:
+        return(False, '"Distance to ON" not defined!')
+    off_distance = data.get('off_distance')
+    if off_distance==None:
+        return(False, '"Distance to OFF" not defined!')
+    if on_distance == off_distance:
+        return(False, '"Distance to ON" and "Distance to OFF" match!')
+    
+    # (4.3) Driver
+    #f_curve = ob.data.shape_keys.key_blocks['jaw_open_C.5'].driver_add('value')
+    f_curve = new_shape_key.driver_add('value')
+    drv = f_curve.driver
+    drv.type = 'SCRIPTED'
+    drv.show_debug_info = True
+    #
+    point = f_curve.keyframe_points.insert(on_distance,1)
+    point.interpolation = 'LINEAR'
+    point = f_curve.keyframe_points.insert(off_distance,0)
+    point.interpolation = 'LINEAR'
+    # var
+    var = drv.variables.new()
+    var.name = 'var'
+    var.type = 'LOC_DIFF'
+    #
+    targ = var.targets[0]
+    targ.id = bpy.data.objects[data['target1'][0]]
+    targ.bone_target = data['target1'][1]
+    targ.transform_space = 'WORLD_SPACE'
+    #
+    targ = var.targets[1]
+    targ.id = bpy.data.objects[data['target2'][0]]
+    targ.bone_target = data['target2'][1]
+    targ.transform_space = 'WORLD_SPACE'
+    #
+    # scale
+    var = drv.variables.new()
+    var.name = 'scale'
+    var.type = 'TRANSFORMS'
+    #
+    targ = var.targets[0]
+    targ.id = bpy.data.objects[data['target1'][0]]
+    targ.transform_type = 'SCALE_X'
+    targ.transform_space = 'WORLD_SPACE'
+    #
+    drv.expression = 'var/scale'
+    #
+    fmod = f_curve.modifiers[0]
+    f_curve.modifiers.remove(fmod)
+    
+    # (5) Mirror
+    if name.endswith(from_mirror):
+        # (5.1) Shape Key
+        mirror_name = '%s.%s' % (SHAPE_KEY_PREFIX, name.replace(from_mirror, to_mirror))
+        if mirror_name in mesh.data.shape_keys.key_blocks:
+            return(False, 'Shape Key with the same name("%s") already exists!' % mirror_name)
+        mirror_shape_key = mesh.shape_key_add(name=mirror_name, from_mix=False)
+        # (5.2) Drivers
+        # (5.2.1) test Targets
+        for key in ['target1', 'target2']:
+            target = data.get(key)
+            armature = bpy.data.objects[target[0]]
+            if not target[1].replace(from_mirror, to_mirror) in armature.pose.bones:
+                return(False, 'Bone with the same name("%s") not found!' % target[1].replace(from_mirror, to_mirror))
+        # (5.3) Driver
+        f_curve = mirror_shape_key.driver_add('value')
+        drv = f_curve.driver
+        drv.type = 'SCRIPTED'
+        drv.show_debug_info = True
+        #
+        point = f_curve.keyframe_points.insert(on_distance,1)
+        point.interpolation = 'LINEAR'
+        point = f_curve.keyframe_points.insert(off_distance,0)
+        point.interpolation = 'LINEAR'
+        # var
+        var = drv.variables.new()
+        var.name = 'var'
+        var.type = 'LOC_DIFF'
+        #
+        targ = var.targets[0]
+        targ.id = bpy.data.objects[data['target1'][0]]
+        targ.bone_target = data['target1'][1].replace(from_mirror, to_mirror)
+        targ.transform_space = 'WORLD_SPACE'
+        #
+        targ = var.targets[1]
+        targ.id = bpy.data.objects[data['target2'][0]]
+        targ.bone_target = data['target2'][1].replace(from_mirror, to_mirror)
+        targ.transform_space = 'WORLD_SPACE'
+        #
+        # scale
+        var = drv.variables.new()
+        var.name = 'scale'
+        var.type = 'TRANSFORMS'
+        #
+        targ = var.targets[0]
+        targ.id = bpy.data.objects[data['target1'][0]]
+        targ.transform_type = 'SCALE_X'
+        targ.transform_space = 'WORLD_SPACE'
+        #
+        drv.expression = 'var/scale'
+        #
+        fmod = f_curve.modifiers[0]
+        f_curve.modifiers.remove(fmod)
     
     context.scene.objects.active = mesh
+    
+    # (6) Clead text
+    for key in ['target1', 'target2', 'on_distance', 'off_distance']:
+        del data[key]
+    write_data(data, clean=True)
+        
     return(True, 'Shape Key (%s) created' % name)
