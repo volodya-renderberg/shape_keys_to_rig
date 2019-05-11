@@ -81,7 +81,7 @@ class SHAPEKEYSTORIG_edit_panel(bpy.types.Panel):
             row.label(str(data.get('mesh')))
         
         col = layout.column(align = True)
-        if mesh:
+        if mesh and mesh.data.shape_keys:
             for key in mesh.data.shape_keys.key_blocks.keys():
                 if not key.startswith(fn.SHAPE_KEY_PREFIX):
                     continue
