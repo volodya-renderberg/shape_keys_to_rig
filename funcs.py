@@ -4,11 +4,20 @@ import os
 import tempfile
 import json
 
-DATA_FILE_NAME = '.shape_keys_to_rig_data.json'
+ARMATURE_DATA_FILE_NAME = '.shape_keys_to_rig_armature_data.json' # keys: armature, parent_bone, mesh
+MESH_DATA_FILE_NAME = '.shape_keys_to_rig_mesh_data.json' # keys: mesh, 
 BONE_PREFIX = 'AUXBS'
+SHAPE_KEY_PREFIX = 'aux'
 
-def write_data(data, clean=False):
-    path = os.path.join(tempfile.gettempdir(), DATA_FILE_NAME)
+# data_type (str) - in 'Armature', 'Mesh'
+def write_data(data, data_type='Armature', clean=False):
+    if data_type=='Armature':
+        path = os.path.join(tempfile.gettempdir(), ARMATURE_DATA_FILE_NAME)
+    elif data_type=='Mesh':
+        path = os.path.join(tempfile.gettempdir(), MESH_DATA_FILE_NAME)
+    else:
+        return
+    #
     if not os.path.exists(path) or clean:
         with open(path, 'w') as outfile:
             json.dump(data, outfile, sort_keys=True, indent=4)
@@ -19,9 +28,16 @@ def write_data(data, clean=False):
             rdata[key] = data[key]
         with open(path, 'w') as outfile:
             json.dump(rdata, outfile, sort_keys=True, indent=4)
-        
-def read_data():
-    path = os.path.join(tempfile.gettempdir(), DATA_FILE_NAME)
+
+# data_type (str) - in 'Armature', 'Mesh'
+def read_data(data_type='Armature'):
+    if data_type=='Armature':
+        path = os.path.join(tempfile.gettempdir(), ARMATURE_DATA_FILE_NAME)
+    elif data_type=='Mesh':
+        path = os.path.join(tempfile.gettempdir(), MESH_DATA_FILE_NAME)
+    else:
+        return
+    #
     if not os.path.exists(path):
         return({})
     with open(path) as json_file:
@@ -30,8 +46,10 @@ def read_data():
 
 def init_parent_bone(context):
     armature = context.object
+    if not armature:
+        return(False, 'No selected object!')
     if armature.type != 'ARMATURE':
-        return(False, 'Selected object is not ARMATURE!')
+        return(False, 'Selected object is not "ARMATURE"!')
     pose_bones = context.selected_pose_bones
     if not pose_bones:
         return(False, 'Pose bones is not selected!')
@@ -39,15 +57,66 @@ def init_parent_bone(context):
     
     write_data({'armature':armature.name, 'parent_bone': parent_bone.name})
     
-    return(True, 'Ok!')
+    return(True, 'parent bone - %s:%s' % (armature.name, parent_bone.name))
 
-def make_target_bone(context, name, height):
+def init_mesh(context):
+    ob = context.object
+    if not ob:
+        return(False, 'No selected object!')
+    if ob.type != 'MESH':
+        return(False, 'Selected object is not "MESH"!')
+    
+    write_data({'mesh': ob.name})
+    
+    return(True, 'mesh - %s' % ob.name)
+
+def init_target(context, target_name):
+    armature = context.object
+    if not armature:
+        return(False, 'No selected object!')
+    if armature.type != 'ARMATURE':
+        return(False, 'Selected object is not "ARMATURE"!')
+    pose_bones = context.selected_pose_bones
+    if not pose_bones:
+        return(False, 'Pose bones is not selected!')
+    bone = pose_bones[0]
+    
+    write_data({target_name: [armature.name, bone.name]})
+    
+    return(True, '%s - %s:%s' % (target_name, armature.name, bone.name))
+
+def init_distance(context, distance_name):
+    data = read_data()
+    
+    # get head positions
+    heads = []
+    for target_name in ['target1','target2']:
+        if not target_name in data:
+            return(False, '"%s" not defined!' % target_name)
+        armature_name = data[target_name][0]
+        bone_name = data[target_name][1]
+        if not armature_name in bpy.data.objects:
+            return(False, 'No object with this name("%s") was found!' % armature_name)
+        if not bone_name in bpy.data.objects[armature_name].pose.bones:
+            return(False, 'No PoseBone with this name("%s") was found!' % bone_name)
+        bone = bpy.data.objects[armature_name].pose.bones[bone_name]
+        heads.append(tuple(bone.head))
+        
+    # calculate distance
+    distance = pow((pow((heads[1][0] - heads[0][0]), 2) + pow((heads[1][1] - heads[0][1]), 2) + pow((heads[1][2] - heads[0][2]), 2)), 0.5)
+    write_data({distance_name: distance})
+    
+    return(True, '%s - %s' % (distance_name, str(distance)))
+
+def make_target_bone(context, name, height, layer):
     pass
     # (1) testing
     if not name:
         return(False, 'Name not specified!')
     if not height:
         return(False, 'Height not specified!')
+    if layer>31:
+        return(False, 'layer number is greater than the allowed value!')
     
     # (2)
     pose_bones = context.selected_pose_bones
@@ -62,6 +131,8 @@ def make_target_bone(context, name, height):
     # (4) make bone
     head_position = tuple(target_bone.head)
     tail_position = (head_position[0], head_position[1], head_position[2]+height)
+    layers = [False]*32
+    layers[layer]=True
     
     context.scene.objects.active = rig
     bpy.ops.object.mode_set(mode='EDIT')
@@ -75,6 +146,7 @@ def make_target_bone(context, name, height):
     new_bone.use_connect = False
     new_bone.parent = rig.data.edit_bones[data['parent_bone']]
     new_bone.use_deform = False
+    new_bone.layers = layers
     
     # (5) make R bone
     if name.endswith('.L'):
@@ -88,7 +160,47 @@ def make_target_bone(context, name, height):
         new_bone.use_connect = False
         new_bone.parent = rig.data.edit_bones[data['parent_bone'].replace('.L', '.R')]
         new_bone.use_deform = False
+        new_bone.layers = layers
         
     bpy.ops.object.mode_set(mode='POSE')
     
     return(True, 'Ok!')
+
+def make_shape_key(context, name):
+    new_name = '%s.%s' % (SHAPE_KEY_PREFIX, name)
+    data = read_data()
+    
+    # (1) test mesh
+    mesh_name = data.get('mesh')
+    if not mesh_name:
+        return(False, '"Mesh" not defined')
+    if not mesh_name in bpy.data.objects:
+        return(False, 'No object with this name("%s") was found!' % mesh_name)
+    mesh = bpy.data.objects[mesh_name]
+    
+    # (2) Basis test
+    if not mesh.data.shape_keys:
+        mesh.shape_key_add(name='Basis', from_mix=False)
+        
+    # (3) Shape key
+    if new_name in mesh.data.shape_keys.key_blocks:
+        return(False, 'Shape Key with the same name("%s") already exists!' % name)
+    mesh.shape_key_add(name=new_name, from_mix=False)
+    
+    # (4) Drivers
+    # (4.1) targets
+    for key in ['target1', 'target2']:
+        target = data.get(key)
+        if not target:
+            return(False, '%s not defined!' % key)
+        if not target[0] in bpy.data.objects:
+            return(False, 'Armature with the same name("%s") not found!' % target[0])
+        armature = bpy.data.objects[target[0]]
+        context.scene.objects.active = armature
+        bpy.ops.object.mode_set(mode='POSE')
+        if not target[1] in armature.pose.bones:
+            return(False, 'Bone with the same name("%s") not found!' % target[1])
+        
+    
+    context.scene.objects.active = mesh
+    return(True, 'Shape Key (%s) created' % name)

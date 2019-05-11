@@ -4,7 +4,7 @@
 #
 
 bl_info = {
-    "name": "Shape Keys to Rig",
+    "name": "Shape Keys Tools",
     "description": "Add Shape Keys to rig depending on bone position.",
     "author": "Volodya Renderberg",
     "version": (1, 0),
