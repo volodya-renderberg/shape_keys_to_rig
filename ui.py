@@ -85,7 +85,9 @@ class SHAPEKEYSTORIG_edit_panel(bpy.types.Panel):
             for key in mesh.data.shape_keys.key_blocks.keys():
                 if not key.startswith(fn.SHAPE_KEY_PREFIX):
                     continue
-                col.label(key)
+                row=col.row(align = True)
+                row.label(key)
+                row.operator('shapekeystorig.mirror_shape_key', text='mirror').name=key
 
 class SHAPEKEYSTORIG_init(bpy.types.Operator):
     bl_idname = "shapekeystorig.init"
@@ -154,6 +156,26 @@ class SHAPEKEYSTORIG_make_shape_key(bpy.types.Operator):
     
     def invoke(self, context, event):
         return context.window_manager.invoke_props_dialog(self)
+    
+class SHAPEKEYSTORIG_mirror_shape_key(bpy.types.Operator):
+    bl_idname = "shapekeystorig.mirror_shape_key"
+    bl_label = "Mirror Shape Key"
+    
+    name = bpy.props.StringProperty(name='Name:')
+    from_mirror = bpy.props.StringProperty(name='From Mirror:', default='.L')
+    to_mirror = bpy.props.StringProperty(name='To Mirror:', default='.R')
+    topology = bpy.props.BoolProperty(name='Use Topology', default=False)
+    
+    def execute(self, context):
+        b,r = fn.mirror_shape_key(context, self.name, self.topology, from_mirror=self.from_mirror, to_mirror=self.to_mirror)
+        if b:
+            self.report({'INFO'}, r)
+        else:
+            self.report({'WARNING'}, r)
+        return{'FINISHED'}
+    
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self)
 
 class SHAPEKEYSTORIG_unreg(bpy.types.Operator):
     bl_idname = "shapekeystorig.unreg"
@@ -169,6 +191,7 @@ def register():
     bpy.utils.register_class(SHAPEKEYSTORIG_init)
     bpy.utils.register_class(SHAPEKEYSTORIG_make_target_bone)
     bpy.utils.register_class(SHAPEKEYSTORIG_make_shape_key)
+    bpy.utils.register_class(SHAPEKEYSTORIG_mirror_shape_key)
     # unreg
     bpy.utils.register_class(SHAPEKEYSTORIG_unreg)
     
@@ -178,5 +201,6 @@ def unregister():
     bpy.utils.unregister_class(SHAPEKEYSTORIG_init)
     bpy.utils.unregister_class(SHAPEKEYSTORIG_make_target_bone)
     bpy.utils.unregister_class(SHAPEKEYSTORIG_make_shape_key)
+    bpy.utils.unregister_class(SHAPEKEYSTORIG_mirror_shape_key)
     # unreg
     bpy.utils.unregister_class(SHAPEKEYSTORIG_unreg)

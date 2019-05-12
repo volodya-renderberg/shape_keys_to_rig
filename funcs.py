@@ -321,3 +321,75 @@ def make_shape_key(context, name, from_mirror='.L', to_mirror='.R'):
     write_data(data, clean=True)
         
     return(True, 'Shape Key (%s) created' % name)
+
+def mirror_shape_key(context, name, topology, from_mirror='.L', to_mirror='.R'):
+    pass
+    # (1) name
+    if name.endswith(to_mirror):
+        return(False, 'Сan not be mirrored ("%s" to "%s")' % (to_mirror, to_mirror))
+    if not from_mirror:
+        return(False, 'Сan not be mirrored!' )
+    #
+    data = read_data()
+    # (2)
+    mesh_name = data.get('mesh')
+    if not mesh_name:
+        return(False, '"Mesh" not defined')
+    if not mesh_name in bpy.data.objects:
+        return(False, 'No object with this name("%s") was found!' % mesh_name)
+    ob = bpy.data.objects[mesh_name]
+    
+    # mirror_name
+    mirror_name = name.replace(from_mirror, to_mirror)
+    if not mirror_name in ob.data.shape_keys.key_blocks:
+        return(False, 'Shape Key named %s not found!' % mirror_name)
+    
+    # mirror
+    new_ob = ob.copy()
+    new_ob.data = ob.data.copy()
+    new_ob.animation_data_clear()
+
+    bpy.context.scene.objects.link(new_ob)
+
+    new_ob.parent = None
+
+    for mod in new_ob.modifiers:
+        new_ob.modifiers.remove(mod)
+        
+    for grp in new_ob.vertex_groups:
+        new_ob.vertex_groups.remove(grp)
+    
+    for i,key in enumerate(new_ob.data.shape_keys.key_blocks.keys()):
+        if key == name:
+            new_ob.active_shape_key_index = i
+            break
+    '''
+    for shkey in new_ob.data.shape_keys.key_blocks:
+        if shkey.name in ['Basis', name]:
+            continue
+        new_ob.shape_key_remove(shkey)
+    '''
+
+    ob.select=False
+    context.scene.objects.active = new_ob
+    
+    #new_ob.active_shape_key_index = i
+    bpy.ops.object.shape_key_mirror(use_topology=topology)
+
+    source_shkey = new_ob.data.shape_keys.key_blocks[name]
+    target_shkey = ob.data.shape_keys.key_blocks[mirror_name]
+    
+    # relative key
+    rel_name = source_shkey.relative_key.name
+    mirror_rel_name = rel_name.replace(from_mirror, to_mirror)
+    if mirror_rel_name in ob.data.shape_keys.key_blocks:
+        target_shkey.relative_key = ob.data.shape_keys.key_blocks[mirror_rel_name]
+    
+    # vertices
+    for vtx in new_ob.data.vertices:
+        target_shkey.data[vtx.index].co = source_shkey.data[vtx.index].co[:]
+    
+    # remove new ob
+    bpy.data.objects.remove(new_ob, do_unlink=True)
+    
+    return(True, 'Shape Key (%s) mirrored' % name)
