@@ -88,6 +88,9 @@ class SHAPEKEYSTORIG_edit_panel(bpy.types.Panel):
                 row=col.row(align = True)
                 row.label(key)
                 row.operator('shapekeystorig.mirror_shape_key', text='mirror').name=key
+                
+        col = layout.column(align = True)
+        col.operator('shapekeystorig.in_between', text='In-between to active')
 
 class SHAPEKEYSTORIG_init(bpy.types.Operator):
     bl_idname = "shapekeystorig.init"
@@ -176,6 +179,25 @@ class SHAPEKEYSTORIG_mirror_shape_key(bpy.types.Operator):
     
     def invoke(self, context, event):
         return context.window_manager.invoke_props_dialog(self)
+    
+class SHAPEKEYSTORIG_in_between(bpy.types.Operator):
+    bl_idname = "shapekeystorig.in_between"
+    bl_label = "In-between"
+    
+    #method = bpy.props.BoolProperty(name='between adjacent', default = True)
+    from_mirror = bpy.props.StringProperty(name='From Mirror:', default='.L')
+    to_mirror = bpy.props.StringProperty(name='To Mirror:', default='.R')
+    
+    def execute(self, context):
+        b,r = fn.in_between(context, from_mirror=self.from_mirror, to_mirror=self.to_mirror)
+        if b:
+            self.report({'INFO'}, r)
+        else:
+            self.report({'WARNING'}, r)
+        return{'FINISHED'}
+    
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self)
 
 class SHAPEKEYSTORIG_unreg(bpy.types.Operator):
     bl_idname = "shapekeystorig.unreg"
@@ -192,6 +214,7 @@ def register():
     bpy.utils.register_class(SHAPEKEYSTORIG_make_target_bone)
     bpy.utils.register_class(SHAPEKEYSTORIG_make_shape_key)
     bpy.utils.register_class(SHAPEKEYSTORIG_mirror_shape_key)
+    bpy.utils.register_class(SHAPEKEYSTORIG_in_between)
     # unreg
     bpy.utils.register_class(SHAPEKEYSTORIG_unreg)
     
@@ -202,5 +225,6 @@ def unregister():
     bpy.utils.unregister_class(SHAPEKEYSTORIG_make_target_bone)
     bpy.utils.unregister_class(SHAPEKEYSTORIG_make_shape_key)
     bpy.utils.unregister_class(SHAPEKEYSTORIG_mirror_shape_key)
+    bpy.utils.unregister_class(SHAPEKEYSTORIG_in_between)
     # unreg
     bpy.utils.unregister_class(SHAPEKEYSTORIG_unreg)

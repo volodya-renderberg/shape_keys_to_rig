@@ -3,6 +3,7 @@ import bpy
 import os
 import tempfile
 import json
+import sys
 
 ARMATURE_DATA_FILE_NAME = '.shape_keys_to_rig_armature_data.json' # keys: armature, parent_bone, mesh
 MESH_DATA_FILE_NAME = '.shape_keys_to_rig_mesh_data.json' # keys: mesh, 
@@ -393,3 +394,112 @@ def mirror_shape_key(context, name, topology, from_mirror='.L', to_mirror='.R'):
     bpy.data.objects.remove(new_ob, do_unlink=True)
     
     return(True, 'Shape Key (%s) mirrored' % name)
+
+def in_between(context, from_mirror='.L', to_mirror='.R'):
+    pass
+    # 1 - получение сетки - возможно нужно просто context.object
+    # 2 - получение чистого имени бленда (base_name). имя состоит из 4 частей префикс.имя.вес-инбитвина.сторона - сторна может отсутствовать.
+    # 3 - миррорить или нет
+    # 4 - определение текущего веса.
+    # 5 - создание shape_key
+    
+    # (1)
+    ob = bpy.context.object
+    #
+    shape_key = ob.active_shape_key
+    if shape_key.name.endswith(to_mirror):
+        return(False, 'Сan not be mirrored ("%s" to "%s")' % (to_mirror, to_mirror))
+    
+    # (2) name
+    separate_name = shape_key.name.split('.')
+    if len(separate_name) < 2:
+        return(False, 'Shape Key name is wrong! Must be: prefix.name.weight.side ("weight" and "side" not required)')
+    base_name = '%s.%s' % (separate_name[0], separate_name[1])
+    # (3)
+    if shape_key.name.endswith(from_mirror):
+        mirror = True
+    else:
+        mirror = False
+    
+    # (4) value
+    weights = {}
+    for sh_key in ob.data.shape_keys.key_blocks:
+        if sh_key.name.startswith(base_name):
+            if sh_key.name.endswith(to_mirror):
+                continue
+            elif sh_key.name.endswith(from_mirror) and not shape_key.name.endswith(from_mirror):
+                continue
+            elif shape_key.name.endswith(from_mirror) and not sh_key.name.endswith(from_mirror):
+                continue
+            #
+            c_value = round(sh_key.value, 3)
+            if c_value==0 or c_value==1:
+                continue
+            #
+            if len(sh_key.name.split('.')) > 2:
+                try:
+                    weight = int(sh_key.name.split('.')[2]) # int - чтобы проверить число это или нет
+                except:
+                    weight = 1000
+            
+            weights[str(weight)] = c_value
+    
+    print(weights)
+    
+    if not weights:
+        return(False, 'Сannot be created in this position!')
+    
+    # (5) method 1 (первый инбитвин)
+    if len(weights)==1:
+        value = weights[list(weights.keys())[0]]
+        if mirror:
+            new_name = '%s.%s%s' % (base_name, str(value).split('.')[1], from_mirror)
+        else:
+            new_name = '%s.%s' % (base_name, str(value).split('.')[1])
+        print(new_name)
+        
+        # test exists
+        if new_name in ob.data.shape_keys.key_blocks:
+            return(False, 'Key with that name "%s" already exists' % new_name)
+        
+        # create shape key
+        new_shape_key = ob.shape_key_add(name=new_name, from_mix=True)
+        
+        # copy driver.variables
+        after_fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % shape_key.name)
+        copy_driver(after_fc, new_shape_key)
+        
+        # copy driver.keyframe_points
+        
+        
+    return(True, 'Ok!')
+
+
+
+# ========================== Utilits ==============================
+
+def copy_target(src, tgt):
+    tgt.data_path = src.data_path
+    tgt.id = src.id
+    tgt.bone_target = src.bone_target
+    tgt.transform_space = src.transform_space
+    tgt.transform_type = src.transform_type
+    
+def copy_variable(src, tgt):
+    v2 = tgt.variables.new()
+    v2.type = src.type
+    v2.name = src.name
+    for i, target in enumerate(v2.targets):
+        try:
+            copy_target(src.targets[i], v2.targets[i])
+        except:
+            print("dang, %s %s"%(src.targets[0].id, sys.exc_info()[0]) )
+
+# src - f-curve
+# tgt - shape_key
+def copy_driver(src, tgt):
+    d2 = tgt.driver_add('value')
+
+    d2.driver.expression = src.driver.expression
+    for v1 in src.driver.variables:
+        copy_variable(v1, d2.driver)
