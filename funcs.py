@@ -453,18 +453,18 @@ def in_between(context, from_mirror='.L', to_mirror='.R'):
     if len(weights)==1:
         pass
         # get value
-        wght = weights[list(weights.keys())[0]]
+        weight = weights[list(weights.keys())[0]]
         after_fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % shape_key.name)
         p1 = after_fc.keyframe_points[0]
         p2 = after_fc.keyframe_points[1]
         #
-        value=(wght - p2.co[1])*((p2.co[0] - p1.co[0])/(p2.co[1] - p1.co[1])) + p2.co[0]
+        value=(weight - p2.co[1])*((p2.co[0] - p1.co[0])/(p2.co[1] - p1.co[1])) + p2.co[0]
         
         # new_name
         if mirror:
-            new_name = '%s.%s%s' % (base_name, str(round(wght,3)).split('.')[1], from_mirror)
+            new_name = '%s.%s%s' % (base_name, str(round(weight,3)).split('.')[1], from_mirror)
         else:
-            new_name = '%s.%s' % (base_name, str(round(wght,3)).split('.')[1])
+            new_name = '%s.%s' % (base_name, str(round(weight,3)).split('.')[1])
         print(new_name)
         
         # test exists shape key
@@ -474,7 +474,7 @@ def in_between(context, from_mirror='.L', to_mirror='.R'):
         # create shape key
         new_shape_key = ob.shape_key_add(name=new_name, from_mix=True)
         # vertex position
-        before, after, weight = 0, 1, wght
+        before, after = 0, 1
         for v in ob.data.vertices:
             before_v = shape_key.relative_key.data[v.index].co
             after_v = shape_key.data[v.index].co
@@ -488,24 +488,70 @@ def in_between(context, from_mirror='.L', to_mirror='.R'):
         
         # keyframe_points
         # -- after
-        after_zero_value = 0
+        after_zero_value, after_value = 0, 0
         for p in after_fc.keyframe_points:
             if p.co[1]==0:
                 after_zero_value = p.co[0]
                 after_fc.keyframe_points.remove(p)
                 after_fc.keyframe_points.insert(value, 0)
-                #p.co[0]=value
-                break
+            elif p.co[1]==1:
+                after_value=p.co[0]
         # -- new
         new_f_curve = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % new_name)
-        points = [(after_zero_value, 0), (value, 1), (0,0)]
+        points = [(after_zero_value, 0), (value, 1), (after_value,0)]
         for p in points:
             point = new_f_curve.keyframe_points.insert(p[0],p[1])
             point.interpolation = 'LINEAR'
-        
         # -- remove modifier
         fmod = new_f_curve.modifiers[0]
         new_f_curve.modifiers.remove(fmod)
+        
+        if mirror:
+            mirror_name = '%s%s' % (base_name, to_mirror)
+            mirror_new_name = '%s.%s%s' % (base_name, str(round(weight,3)).split('.')[1], to_mirror)
+            # get mirror shape key
+            if mirror_name in ob.data.shape_keys.key_blocks:
+                mirror_shkey = ob.data.shape_keys.key_blocks[mirror_name]
+            else:
+                return(False, 'Shape Key not found by "%s" name' % mirror_name)
+            # new shape key
+            # -- test exists shape key
+            if mirror_new_name in ob.data.shape_keys.key_blocks:
+                return(False, 'Key with that name "%s" already exists' % mirror_new_name)
+            # -- create shape key
+            new_shape_key = ob.shape_key_add(name=mirror_new_name, from_mix=True)
+            # -- -- vertex position
+            before, after = 0, 1
+            for v in ob.data.vertices:
+                before_v = mirror_shkey.relative_key.data[v.index].co
+                after_v = mirror_shkey.data[v.index].co
+                #
+                new_shape_key.data[v.index].co[0] = before_v[0] + (after_v[0] - before_v[0])*((weight - before)/(after - before))
+                new_shape_key.data[v.index].co[1] = before_v[1] + (after_v[1] - before_v[1])*((weight - before)/(after - before))
+                new_shape_key.data[v.index].co[2] = before_v[2] + (after_v[2] - before_v[2])*((weight - before)/(after - before))
+            # copy driver.variables
+            mirror_after_fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % mirror_shkey.name)
+            copy_driver(mirror_after_fc, new_shape_key)
+            # keyframe_points
+            # -- after
+            after_zero_value, after_value = 0, 0
+            for p in mirror_after_fc.keyframe_points:
+                if p.co[1]==0:
+                    after_zero_value = p.co[0]
+                    mirror_after_fc.keyframe_points.remove(p)
+                    mirror_after_fc.keyframe_points.insert(value, 0)
+                    #p.co[0]=value
+                elif p.co[1]==1:
+                    after_value=p.co[0]
+            # -- new
+            new_f_curve = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % mirror_new_name)
+            points = [(after_zero_value, 0), (value, 1), (after_value,0)]
+            for p in points:
+                point = new_f_curve.keyframe_points.insert(p[0],p[1])
+                point.interpolation = 'LINEAR'
+            # -- remove modifier
+            fmod = new_f_curve.modifiers[0]
+            new_f_curve.modifiers.remove(fmod)
         
     return(True, 'Ok!')
 
