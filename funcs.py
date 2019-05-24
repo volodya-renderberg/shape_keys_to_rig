@@ -10,6 +10,9 @@ MESH_DATA_FILE_NAME = '.shape_keys_to_rig_mesh_data.json' # keys: mesh,
 BONE_PREFIX = 'AUXBS'
 SHAPE_KEY_PREFIX = 'aux'
 
+def set_float(self, value):
+    self["zero"] = value
+
 # data_type (str) - in 'Armature', 'Mesh'
 def write_data(data, data_type='Armature', clean=False):
     if data_type=='Armature':
@@ -399,10 +402,11 @@ def in_between(context, from_mirror='.L', to_mirror='.R'):
     pass
     # 1 - получение сетки - возможно нужно просто context.object
     # 2 - получение чистого имени бленда (base_name). имя состоит из 4 частей префикс.имя.вес-инбитвина.сторона - сторна может отсутствовать.
-    # 3 - миррорить или нет
+    # 3 - миррорить или нет / base_shape_key_name
     # 4 - определение текущего веса.
-    # 5 - создание shape_key метод 1 (первый инбитвин)
-    # 6 - создание shape_key метод 2 (любой промежуточный).
+    # 5 - запись значения для нуля базового бленда - до создания первого инбитвина.
+    # 6 - создание shape_key метод 1 (между нулём и блендом).
+    # 7 - создание shape_key метод 2 (между двумя блендами).
     
     # (1)
     ob = bpy.context.object
@@ -416,14 +420,22 @@ def in_between(context, from_mirror='.L', to_mirror='.R'):
     if len(separate_name) < 2:
         return(False, 'Shape Key name is wrong! Must be: prefix.name.weight.side ("weight" and "side" not required)')
     base_name = '%s.%s' % (separate_name[0], separate_name[1])
+    
     # (3)
     if shape_key.name.endswith(from_mirror):
         mirror = True
     else:
         mirror = False
     
+    # -- (3.1) base shape key name
+    if mirror:
+        base_shape_key_name = '%s%s' % (base_name, from_mirror)
+    else:
+        base_shape_key_name = base_name
+    
     # (4) value
     weights = {}
+    num_shape_keys = 0
     for sh_key in ob.data.shape_keys.key_blocks:
         if sh_key.name.startswith(base_name):
             if sh_key.name.endswith(to_mirror):
@@ -432,6 +444,8 @@ def in_between(context, from_mirror='.L', to_mirror='.R'):
                 continue
             elif shape_key.name.endswith(from_mirror) and not sh_key.name.endswith(from_mirror):
                 continue
+            #
+            num_shape_keys+=1
             #
             c_value = round(sh_key.value, 3)
             if c_value==0 or c_value==1:
@@ -450,42 +464,84 @@ def in_between(context, from_mirror='.L', to_mirror='.R'):
     if not weights:
         return(False, 'Сannot be created in this position!')
     
-    # (5) method 1 (первый инбитвин)
+    # (5) add FloatProperty for zero value
+    if num_shape_keys==1:
+        attr_name = base_shape_key_name.replace('.', '_')
+        exec('bpy.types.Mesh.%s =  bpy.props.FloatProperty(name = \"%s\", default=0.0)' % (attr_name, attr_name))
+        base_fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % base_shape_key_name)
+        for point in base_fc.keyframe_points:
+            if point.co[1]==0:
+                setattr(ob.data, attr_name, point.co[0])
+
+    # (6) method 1 (между нулём и блендом)
     if len(weights)==1:
         pass
-        # get value/weight
+        # 6.1 - get shape_key_name/weight/value
+        # 6.2 - new_name
+        # 6.3 - create shape_key
+    
+        # (6.1)
+        # -- get after_shape_key name
+        key = list(weights.keys())[0]
         weight = weights[list(weights.keys())[0]]
-        after_fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % shape_key.name)
-        p1 = after_fc.keyframe_points[0]
-        p2 = after_fc.keyframe_points[1]
-        #
-        value=(weight - p2.co[1])*((p2.co[0] - p1.co[0])/(p2.co[1] - p1.co[1])) + p2.co[0]
         
-        # new_name
-        if mirror:
-            new_name = '%s.%s%s' % (base_name, str(format(round(weight,3), '.3f')).split('.')[1], from_mirror)
+        # -- get abs weight
+        if key=='1000': 
+            abs_weight = weight
         else:
-            new_name = '%s.%s' % (base_name, str(format(round(weight,3), '.3f')).split('.')[1])
-        print(new_name)
+            abs_weight = weight*(int(key)/1000)
         
-        # test exists shape key
+        #
+        if mirror:
+            if key=='1000':
+                after_shape_key_name = '%s%s' % (base_name, from_mirror)
+            else:
+                after_shape_key_name = '%s.%s%s' % (base_name, int(key), from_mirror)
+        else:
+            if key=='1000':
+                after_shape_key_name = base_name
+            else:
+                after_shape_key_name = '%s.%s' % (base_name, int(key))
+        
+        after_shape_key = ob.data.shape_keys.key_blocks.get(after_shape_key_name)
+        if not after_shape_key:
+            return(False, 'Shape Key "%s" not found' % after_shape_key_name)
+        
+        #
+        value = get_value(ob, after_shape_key_name, base_shape_key_name, weight)
+        
+        # (6.2)
+        # -- new name
+        if mirror:
+            new_name = '%s.%s%s' % (base_name, str(format(round(abs_weight,3), '.3f')).split('.')[1], from_mirror)
+        else:
+            new_name = '%s.%s' % (base_name, str(format(round(abs_weight,3), '.3f')).split('.')[1])
+        
+        # (6.3)
+        # -- test exists shape key
         if new_name in ob.data.shape_keys.key_blocks:
             return(False, 'Key with that name "%s" already exists' % new_name)
         
         # create shape key
         new_shape_key = ob.shape_key_add(name=new_name, from_mix=True)
         # vertex position
-        before, after = 0, 1
-        __make_in_between(ob, new_shape_key, shape_key, after, before, value, weight)
+        before, after = 0, int(key)/1000
+        __make_in_between(ob, new_shape_key, after_shape_key, after, before, value, abs_weight, base_shape_key_name)
+        #
         
+        #
         if mirror:
-            mirror_name = '%s%s' % (base_name, to_mirror)
-            mirror_new_name = '%s.%s%s' % (base_name, str(format(round(weight,3), '.3f')).split('.')[1], to_mirror)
-            # get mirror shape key
-            if mirror_name in ob.data.shape_keys.key_blocks:
-                mirror_shkey = ob.data.shape_keys.key_blocks[mirror_name]
+            if key=='1000':
+                mirror_after_name = '%s%s' % (base_name, to_mirror)
             else:
-                return(False, 'Shape Key not found by "%s" name' % mirror_name)
+                mirror_after_name = '%s.%s%s' % (base_name, int(key), to_mirror)
+            #
+            mirror_new_name = '%s.%s%s' % (base_name, str(format(round(abs_weight,3), '.3f')).split('.')[1], to_mirror)
+            # get mirror shape key
+            if mirror_after_name in ob.data.shape_keys.key_blocks:
+                mirror_after_shkey = ob.data.shape_keys.key_blocks[mirror_after_name]
+            else:
+                return(False, 'Shape Key not found by "%s" name' % mirror_after_name)
             
             # new shape key
             # -- test exists shape key
@@ -493,17 +549,18 @@ def in_between(context, from_mirror='.L', to_mirror='.R'):
                 return(False, 'Shape Key with that name "%s" already exists' % mirror_new_name)
             # -- create shape key
             new_shape_key = ob.shape_key_add(name=mirror_new_name, from_mix=True)
+            #
+            #print('value: %s,\nafter_name: %s,\nnew_name: %s,\nabs_weight: %s,\nafter: %s' % (value, mirror_after_name, mirror_new_name, str(abs_weight), str(after)));return(True, 'Ok!!!!!!!')
             # -- -- vertex position
-            before, after = 0, 1
-            __make_in_between(ob, new_shape_key, mirror_shkey, after, before, value, weight)
-    # (6)
+            __make_in_between(ob, new_shape_key, mirror_after_shkey, after, before, value, abs_weight, base_shape_key_name)
+    # (7) (между двумя блендами)
     elif len(weights)==2:
         pass
-        # 6.1 - get before_shape_key / after_shape_key
-        # 6.2 - get value/weight
-        # 6.3 - create new_shape_key
+        # 7.1 - get before_shape_key / after_shape_key
+        # 7.2 - get value/weight
+        # 7.3 - create new_shape_key
         
-        # (6.1)
+        # (7.1)
         weights_keys = sorted([int(item) for item in weights.keys()])
         if mirror:
             before_shape_key_name = '%s.%s%s' % (base_name, weights_keys[0], from_mirror)
@@ -529,18 +586,18 @@ def in_between(context, from_mirror='.L', to_mirror='.R'):
         else:
             return(False, 'Shape Key not found by "%s" name' % after_shape_key_name)
         
-        # (6.2)
+        # (7.2)
         weight = weights[str(weights_keys[1])]
         after_fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % after_shape_key_name)
         p1 = after_fc.keyframe_points[0]# первые две точки - взлёт от нуля.
         p2 = after_fc.keyframe_points[1]
         #
-        value=(weight - p2.co[1])*((p2.co[0] - p1.co[0])/(p2.co[1] - p1.co[1])) + p2.co[0]
+        value=(weight - p2.co[1])*((p2.co[0] - p1.co[0])/(p2.co[1] - p1.co[1])) + p2.co[0];print(value);return(True, 'Ok!')
         #
         before = int(weights_keys[0])/1000
         after = int(weights_keys[1])/1000
         
-        # (6.3)
+        # (7.3)
         name_index = str(format(round((before + (after - before)*(weight)), 3), '.3f')).split('.')[1]
         if mirror:
             new_name = '%s.%s%s' % (base_name, name_index, from_mirror)
@@ -554,7 +611,7 @@ def in_between(context, from_mirror='.L', to_mirror='.R'):
         
         print(before_shape_key_name, after_shape_key_name, before, after, name_index, new_name)
         
-        __make_in_between(ob, new_shape_key, after_shape_key, after, before, value, weight, before_shape_key=before_shape_key)
+        __make_in_between(ob, new_shape_key, after_shape_key, after, before, value, weight, base_shape_key_name, before_shape_key=before_shape_key)
 
     return(True, 'Ok!')
 
@@ -588,11 +645,13 @@ def copy_driver(src, tgt, mirror=False):
     for v1 in src.driver.variables:
         copy_variable(v1, d2.driver)
 
-def __make_in_between(ob, new_shape_key, after_shape_key, after, before, value, weight, before_shape_key=False):
+def __make_in_between(ob, new_shape_key, after_shape_key, after, before, value, weight, base_shape_key_name, before_shape_key=False):
     after_fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % after_shape_key.name)
     if before_shape_key:
         before_fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % before_shape_key.name)
-    
+        
+    #
+    print(after, before, weight)
     # vertex position
     for v in ob.data.vertices:
         if before_shape_key:
@@ -609,29 +668,8 @@ def __make_in_between(ob, new_shape_key, after_shape_key, after, before, value, 
     copy_driver(after_fc, new_shape_key)
     
     # keyframe_points
-    # -- after
-    # -- -- point 0
-    '''
-    point0 = after_fc.keyframe_points[0]
-    after_zero_value = point0.co[0]
-    after_fc.keyframe_points.remove(point0)
-    after_fc.keyframe_points.insert(value, 0)
-    # -- -- point 1
-    after_value = after_fc.keyframe_points[1].co[0]
-    '''
-    zero_point = None
-    for p in after_fc.keyframe_points:
-        if p.co[1]==0:
-            if zero_point:
-                if abs(p.co[0]-value)<abs(zero_point.co[0]-value):
-                    zero_point = p
-            else:
-                zero_point = p
-            #after_zero_value = p.co[0]
-            #after_fc.keyframe_points.remove(p)
-            #after_fc.keyframe_points.insert(value, 0)
-        elif p.co[1]==1:
-            after_value=p.co[0]
+    zero_point, p1, z = get_two_points(ob, after_shape_key.name, base_shape_key_name)
+    after_value=p1.co[0]
     #
     after_zero_value = zero_point.co[0]
     after_fc.keyframe_points.remove(zero_point)
@@ -639,23 +677,52 @@ def __make_in_between(ob, new_shape_key, after_shape_key, after, before, value, 
     
     # -- before
     if before_shape_key:
-        zero_point = None
-        for p in before_fc.keyframe_points:
-            if p.co[1]==0:
-                if zero_point:
-                    if abs(p.co[0]-value)<abs(zero_point.co[0]-value):
-                        zero_point = p
-                else:
-                    zero_point = p
+        zero_point, bf_p1, z = get_two_points(ob, before_shape_key.name, base_shape_key_name, more=True)
         before_fc.keyframe_points.remove(zero_point)
         before_fc.keyframe_points.insert(value, 0)
         
     # -- new
     new_f_curve = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % new_shape_key.name)
-    points = [(after_zero_value, 0), (value, 1), (after_value,0)]
+    #
+    if before_shape_key:
+        points = [(bf_p1.co[0], 0), (value, 1), (after_value,0)]
+    else:
+        points = [(z , 0), (value, 1), (after_value,0)]
     for p in points:
         point = new_f_curve.keyframe_points.insert(p[0],p[1])
         point.interpolation = 'LINEAR'
     # -- remove modifier
     fmod = new_f_curve.modifiers[0]
     new_f_curve.modifiers.remove(fmod)
+    
+def get_value(ob, after_shape_key_name, base_shape_key_name, weight):
+    p1, p2, z = get_two_points(ob, after_shape_key_name, base_shape_key_name)
+    #
+    value=(weight - p2.co[1])*((p2.co[0] - p1.co[0])/(p2.co[1] - p1.co[1])) + p2.co[0]
+    return(value)
+
+def get_two_points(ob, after_shape_key_name, base_shape_key_name, more=False):
+    after_fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % after_shape_key_name)
+    # get zero
+    attr_name = base_shape_key_name.replace('.', '_')
+    if not attr_name in dir(ob.data):
+        exec('bpy.types.Mesh.%s =  bpy.props.FloatProperty(name = \"%s\", default=0.0)' % (attr_name, attr_name))
+    zero = getattr(ob.data, attr_name)
+    print('zero: %s' % str(zero))
+    # get points
+    p1, p2 = None, None
+    for point in after_fc.keyframe_points:
+        if point.co[1]==1:
+            p2=point
+        elif point.co[1]==0:
+            if p1 is None:
+                p1=point
+            else:
+                if more:
+                    if abs(point.co[0] - zero) > abs(p1.co[0] - zero):
+                        p1=point
+                else:
+                    if abs(point.co[0] - zero) < abs(p1.co[0] - zero):
+                        p1=point
+                    
+    return(p1, p2, zero)
