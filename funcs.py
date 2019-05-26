@@ -550,7 +550,7 @@ def in_between(context, from_mirror='.L', to_mirror='.R'):
             # -- create shape key
             new_shape_key = ob.shape_key_add(name=mirror_new_name, from_mix=True)
             #
-            #print('value: %s,\nafter_name: %s,\nnew_name: %s,\nabs_weight: %s,\nafter: %s' % (value, mirror_after_name, mirror_new_name, str(abs_weight), str(after)));return(True, 'Ok!!!!!!!')
+            
             # -- -- vertex position
             __make_in_between(ob, new_shape_key, mirror_after_shkey, after, before, value, abs_weight, base_shape_key_name)
     # (7) (между двумя блендами)
@@ -574,6 +574,7 @@ def in_between(context, from_mirror='.L', to_mirror='.R'):
                 after_shape_key_name = '%s' % (base_name)
             else:
                 after_shape_key_name = '%s.%s' % (base_name, weights_keys[1])
+        #
         
         #
         if before_shape_key_name in ob.data.shape_keys.key_blocks:
@@ -587,31 +588,35 @@ def in_between(context, from_mirror='.L', to_mirror='.R'):
             return(False, 'Shape Key not found by "%s" name' % after_shape_key_name)
         
         # (7.2)
-        weight = weights[str(weights_keys[1])]
-        after_fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % after_shape_key_name)
-        p1 = after_fc.keyframe_points[0]# первые две точки - взлёт от нуля.
-        p2 = after_fc.keyframe_points[1]
-        #
-        value=(weight - p2.co[1])*((p2.co[0] - p1.co[0])/(p2.co[1] - p1.co[1])) + p2.co[0];print(value);return(True, 'Ok!')
-        #
-        before = int(weights_keys[0])/1000
-        after = int(weights_keys[1])/1000
+        key0 = list(weights.keys())[0]
+        key1 = list(weights.keys())[1]
+        y = weights[key1]
+        before = x1 = int(key0)/1000
+        after = x2 = int(key1)/1000
         
-        # (7.3)
-        name_index = str(format(round((before + (after - before)*(weight)), 3), '.3f')).split('.')[1]
+        # -- get abs weight
+        abs_weight = (y-1)*(x2-x1)+x2
+        
+        # get value
+        value = get_value(ob, after_shape_key_name, base_shape_key_name, y)
+        
+        # -- new name
         if mirror:
-            new_name = '%s.%s%s' % (base_name, name_index, from_mirror)
+            new_name = '%s.%s%s' % (base_name, str(format(round(abs_weight,3), '.3f')).split('.')[1], from_mirror)
         else:
-            new_name = '%s.%s' % (base_name, name_index)
-        #
+            new_name = '%s.%s' % (base_name, str(format(round(abs_weight,3), '.3f')).split('.')[1])
+        
+        # make shape_key
         if not new_name in ob.data.shape_keys.key_blocks:
             new_shape_key = ob.shape_key_add(name=new_name, from_mix=True)
         else:
             return(False, 'Shape Key with that name "%s" already exists' % new_name)
         
-        print(before_shape_key_name, after_shape_key_name, before, after, name_index, new_name)
+        # make in_between
+        __make_in_between(ob, new_shape_key, after_shape_key, after, before, value, abs_weight, base_shape_key_name, before_shape_key=before_shape_key)
         
-        __make_in_between(ob, new_shape_key, after_shape_key, after, before, value, weight, base_shape_key_name, before_shape_key=before_shape_key)
+        #
+        print('after_name: %s\nbefor_name: %s\nabs_weight: %s\nvalue: %s\nnew_name: %s' % (after_shape_key_name, before_shape_key_name, abs_weight, value, new_name));return(True, 'Ok***!')
 
     return(True, 'Ok!')
 
@@ -670,7 +675,7 @@ def __make_in_between(ob, new_shape_key, after_shape_key, after, before, value, 
     # keyframe_points
     zero_point, p1, z = get_two_points(ob, after_shape_key.name, base_shape_key_name)
     after_value=p1.co[0]
-    #
+    # -- after
     after_zero_value = zero_point.co[0]
     after_fc.keyframe_points.remove(zero_point)
     after_fc.keyframe_points.insert(value, 0)
@@ -685,9 +690,13 @@ def __make_in_between(ob, new_shape_key, after_shape_key, after, before, value, 
     new_f_curve = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % new_shape_key.name)
     #
     if before_shape_key:
+        #print('%'*100)
         points = [(bf_p1.co[0], 0), (value, 1), (after_value,0)]
+        print('points:', points)
     else:
+        #print('#'*100)
         points = [(z , 0), (value, 1), (after_value,0)]
+        print('points*:', points)
     for p in points:
         point = new_f_curve.keyframe_points.insert(p[0],p[1])
         point.interpolation = 'LINEAR'
@@ -701,8 +710,8 @@ def get_value(ob, after_shape_key_name, base_shape_key_name, weight):
     value=(weight - p2.co[1])*((p2.co[0] - p1.co[0])/(p2.co[1] - p1.co[1])) + p2.co[0]
     return(value)
 
-def get_two_points(ob, after_shape_key_name, base_shape_key_name, more=False):
-    after_fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % after_shape_key_name)
+def get_two_points(ob, current_shape_key_name, base_shape_key_name, more=False):
+    fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % current_shape_key_name)
     # get zero
     attr_name = base_shape_key_name.replace('.', '_')
     if not attr_name in dir(ob.data):
@@ -711,7 +720,7 @@ def get_two_points(ob, after_shape_key_name, base_shape_key_name, more=False):
     print('zero: %s' % str(zero))
     # get points
     p1, p2 = None, None
-    for point in after_fc.keyframe_points:
+    for point in fc.keyframe_points:
         if point.co[1]==1:
             p2=point
         elif point.co[1]==0:
