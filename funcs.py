@@ -649,7 +649,13 @@ def in_between(context, from_mirror='.L', to_mirror='.R'):
 
     return(True, 'Ok!')
 
+def remove_in_between(context):
+    pass
 
+    ob = context.object
+    r_shk = ob.active_shape_key
+    
+    return(True, 'Remove: %s' % r_shk.name)
 
 # ========================== Utilits ==============================
 

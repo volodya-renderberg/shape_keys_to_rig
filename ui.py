@@ -3,7 +3,7 @@ import bpy
 from . import funcs as fn
 
 class SHAPEKEYSTORIG_create_panel(bpy.types.Panel):
-    bl_label = 'Shape Keys Tools / Create:'
+    bl_label = 'base Shape Key:'
     bl_space_type = "VIEW_3D"
     bl_region_type = "TOOLS"
     bl_category = 'ShKTls'
@@ -59,7 +59,7 @@ class SHAPEKEYSTORIG_create_panel(bpy.types.Panel):
         #col.operator('shapekeystorig.unreg')
         
 class SHAPEKEYSTORIG_edit_panel(bpy.types.Panel):
-    bl_label = 'Shape Keys Tools / Edit:'
+    bl_label = 'In-Between Shape Keys:'
     bl_space_type = "VIEW_3D"
     bl_region_type = "TOOLS"
     bl_category = 'ShKTls'
@@ -90,7 +90,10 @@ class SHAPEKEYSTORIG_edit_panel(bpy.types.Panel):
                 row.operator('shapekeystorig.mirror_shape_key', text='mirror').name=key
                 
         col = layout.column(align = True)
-        col.operator('shapekeystorig.in_between', text='In-between to active')
+        col.operator('shapekeystorig.in_between', text='In-between for active')
+        
+        col = layout.column(align = True)
+        col.operator('shapekeystorig.remove_in_between', text='Remove active In-between')
 
 class SHAPEKEYSTORIG_init(bpy.types.Operator):
     bl_idname = "shapekeystorig.init"
@@ -198,6 +201,22 @@ class SHAPEKEYSTORIG_in_between(bpy.types.Operator):
     
     def invoke(self, context, event):
         return context.window_manager.invoke_props_dialog(self)
+    
+# shapekeystorig.remove_in_between
+class SHAPEKEYSTORIG_remove_in_between(bpy.types.Operator):
+    bl_idname = "shapekeystorig.remove_in_between"
+    bl_label = "Are you sure?"
+    
+    def execute(self, context):
+        b,r = fn.remove_in_between(context)
+        if b:
+            self.report({'INFO'}, r)
+        else:
+            self.report({'WARNING'}, r)
+        return{'FINISHED'}
+    
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self)
 
 class SHAPEKEYSTORIG_unreg(bpy.types.Operator):
     bl_idname = "shapekeystorig.unreg"
@@ -215,6 +234,7 @@ def register():
     bpy.utils.register_class(SHAPEKEYSTORIG_make_shape_key)
     bpy.utils.register_class(SHAPEKEYSTORIG_mirror_shape_key)
     bpy.utils.register_class(SHAPEKEYSTORIG_in_between)
+    bpy.utils.register_class(SHAPEKEYSTORIG_remove_in_between)
     # unreg
     bpy.utils.register_class(SHAPEKEYSTORIG_unreg)
     
@@ -226,5 +246,6 @@ def unregister():
     bpy.utils.unregister_class(SHAPEKEYSTORIG_make_shape_key)
     bpy.utils.unregister_class(SHAPEKEYSTORIG_mirror_shape_key)
     bpy.utils.unregister_class(SHAPEKEYSTORIG_in_between)
+    bpy.utils.unregister_class(SHAPEKEYSTORIG_remove_in_between)
     # unreg
     bpy.utils.unregister_class(SHAPEKEYSTORIG_unreg)
