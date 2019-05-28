@@ -649,13 +649,108 @@ def in_between(context, from_mirror='.L', to_mirror='.R'):
 
     return(True, 'Ok!')
 
-def remove_in_between(context):
+def remove_in_between(context, from_mirror, to_mirror):
     pass
+    # 1 - парсинг имени, если это не инбитвин то отказ.
+    # 2 - поиск after и before.
+    # 3 - перезапись поинтов.
+    # 4 - удаление.
 
     ob = context.object
-    r_shk = ob.active_shape_key
+    shape_key = ob.active_shape_key
     
-    return(True, 'Remove: %s' % r_shk.name)
+    # (1)
+    # -- parsing of name
+    separate_name = shape_key.name.split('.')
+    if len(separate_name) < 2:
+        return(False, 'Shape Key name is wrong! Must be: prefix.name.weight.side ("weight" and "side" not required)')
+    base_name = '%s.%s' % (separate_name[0], separate_name[1])
+    
+    # -- get mirror
+    fr_mr = from_mirror
+    to_mr = to_mirror
+    if shape_key.name.endswith(from_mirror):
+        mirror = True
+    elif shape_key.name.endswith(to_mirror):
+        mirror = True
+        fr_mr = to_mirror
+        to_mr = from_mirror
+    else:
+        mirror = False
+    
+    # -- get base shape key
+    if mirror:
+        base_shape_key = ob.data.shape_keys.key_blocks['%s%s' % (base_name, fr_mr)]
+    else:
+        base_shape_key = ob.data.shape_keys.key_blocks[base_name]
+        
+    #  --
+    if mirror and shape_key.name == base_shape_key.name:
+        return(False, 'base Shape_key cannot be removed!')
+    
+    # (2)
+    try:
+        num = int(shape_key.name.split('.')[2])
+    except Exception as e:
+        print(e)
+        return(False, 'wrong number "%s"!' % shape_key.name.split('.')[2])
+    
+    before_num = 0
+    after_num = 1000
+    before_shape_key = None
+    after_shape_key = base_shape_key
+    #
+    for sh_key in ob.data.shape_keys.key_blocks:
+        pass
+        name = sh_key.name
+        if mirror and name.endswith(to_mr):
+            continue
+        elif not mirror and (name.endswith(to_mr) or name.endswith(fr_mr)):
+            continue
+        try:
+            c_num = int(name.split('.')[2]) # сразу исключаем базовый шейп, так как after_num уже = 1000
+            if c_num == num:
+                continue
+        except:
+            continue
+        
+        if before_num < c_num < num:
+            before_num = c_num
+            before_shape_key = sh_key
+        elif num < c_num < after_num:
+            after_num = c_num
+            after_shape_key = sh_key
+    
+    # prints
+    #if before_shape_key:
+        #before_data = before_shape_key.name
+    #else:
+        #before_data = before_shape_key
+    #print('nbefore num: %s\nafter num: %s\nbefore shk: %s\nafter shk: %s' % (before_num, after_num, before_data, after_shape_key.name))
+    
+    
+    # (3)
+    # -- after
+    af_p0, af_p1, zero = get_two_points(ob, after_shape_key.name, base_shape_key.name)
+    if before_shape_key:
+        bf_p0, bf_p1, zero = get_two_points(ob, before_shape_key.name, base_shape_key.name)
+        new_point = (tuple(bf_p1.co)[0], 0)
+    else:
+        new_point = (zero, 0)
+    after_fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % after_shape_key.name)
+    after_fc.keyframe_points.remove(af_p0)
+    after_fc.keyframe_points.insert(new_point[0], new_point[1])
+    
+    # -- before
+    if before_shape_key:
+        pass
+    
+    # -- remove
+    fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % shape_key.name)
+    context.scene.animation_data.action.fcurves.remove(fc)
+    bpy.ops.object.shape_key_remove(all=False)
+    
+    return(True, 'Remove: %s' % shape_key.name)
 
 # ========================== Utilits ==============================
 

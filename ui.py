@@ -3,7 +3,7 @@ import bpy
 from . import funcs as fn
 
 class SHAPEKEYSTORIG_create_panel(bpy.types.Panel):
-    bl_label = 'base Shape Key:'
+    bl_label = 'Base Shape Key:'
     bl_space_type = "VIEW_3D"
     bl_region_type = "TOOLS"
     bl_category = 'ShKTls'
@@ -208,7 +208,9 @@ class SHAPEKEYSTORIG_remove_in_between(bpy.types.Operator):
     bl_label = "Are you sure?"
     
     def execute(self, context):
-        b,r = fn.remove_in_between(context)
+        from_mirror = '.L'
+        to_mirror = '.R'
+        b,r = fn.remove_in_between(context, from_mirror, to_mirror)
         if b:
             self.report({'INFO'}, r)
         else:
