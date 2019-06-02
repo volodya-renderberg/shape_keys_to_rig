@@ -6,19 +6,22 @@ import json
 import sys
 
 ARMATURE_DATA_FILE_NAME = '.shape_keys_to_rig_armature_data.json' # keys: armature, parent_bone, mesh
-MESH_DATA_FILE_NAME = '.shape_keys_to_rig_mesh_data.json' # keys: mesh, 
+MESH_DATA_FILE_NAME = '.shape_keys_to_rig_mesh_data.json' # keys: mesh,
+TO_STEP_DATA_FILE_NAME = '.shape_keys_to_to_step_data' # для пошагового миррора.
 BONE_PREFIX = 'AUXBS'
 SHAPE_KEY_PREFIX = 'aux'
 
 def set_float(self, value):
     self["zero"] = value
 
-# data_type (str) - in 'Armature', 'Mesh'
+# data_type (str) - in 'Armature', 'Mesh', 'Steps'
 def write_data(data, data_type='Armature', clean=False):
     if data_type=='Armature':
         path = os.path.join(tempfile.gettempdir(), ARMATURE_DATA_FILE_NAME)
     elif data_type=='Mesh':
         path = os.path.join(tempfile.gettempdir(), MESH_DATA_FILE_NAME)
+    elif data_type=='Steps':
+        path = os.path.join(tempfile.gettempdir(), TO_STEP_DATA_FILE_NAME)
     else:
         return
     #
@@ -39,6 +42,8 @@ def read_data(data_type='Armature'):
         path = os.path.join(tempfile.gettempdir(), ARMATURE_DATA_FILE_NAME)
     elif data_type=='Mesh':
         path = os.path.join(tempfile.gettempdir(), MESH_DATA_FILE_NAME)
+    elif data_type=='Steps':
+        path = os.path.join(tempfile.gettempdir(), TO_STEP_DATA_FILE_NAME)
     else:
         return
     #
@@ -326,7 +331,7 @@ def make_shape_key(context, name, from_mirror='.L', to_mirror='.R'):
         
     return(True, 'Shape Key (%s) created' % name)
 
-def mirror_shape_key(context, name, topology, from_mirror='.L', to_mirror='.R'):
+def mirror_shape_key(context, name, topology, from_mirror='.L', to_mirror='.R', active=False):
     pass
     # (1) name
     if name.endswith(to_mirror):
@@ -334,24 +339,31 @@ def mirror_shape_key(context, name, topology, from_mirror='.L', to_mirror='.R'):
     if not from_mirror:
         return(False, 'Сan not be mirrored!' )
     #
-    data = read_data()
-    # (2)
-    mesh_name = data.get('mesh')
-    if not mesh_name:
-        return(False, '"Mesh" not defined')
-    if not mesh_name in bpy.data.objects:
-        return(False, 'No object with this name("%s") was found!' % mesh_name)
-    ob = bpy.data.objects[mesh_name]
+    if not active:
+        data = read_data()
+        # (2)
+        mesh_name = data.get('mesh')
+        if not mesh_name:
+            return(False, '"Mesh" not defined')
+        if not mesh_name in bpy.data.objects:
+            return(False, 'No object with this name("%s") was found!' % mesh_name)
+        ob = bpy.data.objects[mesh_name]
+    else:
+        ob = context.object
     
     # mirror_name
     mirror_name = name.replace(from_mirror, to_mirror)
     if not mirror_name in ob.data.shape_keys.key_blocks:
         return(False, 'Shape Key named %s not found!' % mirror_name)
+    for i,key in enumerate(ob.data.shape_keys.key_blocks.keys()):
+        if key == mirror_name:
+            ob.active_shape_key_index = i
+            break
     
     # mirror
     new_ob = ob.copy()
     new_ob.data = ob.data.copy()
-    new_ob.animation_data_clear()
+    new_ob.data.animation_data_clear()
 
     bpy.context.scene.objects.link(new_ob)
 
@@ -363,22 +375,74 @@ def mirror_shape_key(context, name, topology, from_mirror='.L', to_mirror='.R'):
     for grp in new_ob.vertex_groups:
         new_ob.vertex_groups.remove(grp)
     
-    for i,key in enumerate(new_ob.data.shape_keys.key_blocks.keys()):
-        if key == name:
-            new_ob.active_shape_key_index = i
-            break
-    '''
+    # remove осталных shape key
     for shkey in new_ob.data.shape_keys.key_blocks:
         if shkey.name in ['Basis', name]:
             continue
         new_ob.shape_key_remove(shkey)
-    '''
-
-    ob.select=False
-    context.scene.objects.active = new_ob
     
+    ob.select=False
+    context.scene.objects.active = None
+    context.scene.objects.active = new_ob
+    #bpy.ops.object.mode_set(mode = 'EDIT')
+    #bpy.ops.object.mode_set(mode = 'OBJECT')
+    
+    # выставление в 1
+    for i,key in enumerate(new_ob.data.shape_keys.key_blocks.keys()):
+        if key == name:
+            new_ob.active_shape_key_index = i
+            new_ob.active_shape_key.value = 1
+            break
+    # to steps
+    wr_data = {
+    'new_ob_name':new_ob.name,
+    'ob_name': ob.name,
+    'name': name,
+    'mirror_name': mirror_name,
+    'from_mirror': from_mirror,
+    'to_mirror': to_mirror,
+    'topology': topology,
+    }
+    write_data(wr_data, data_type='Steps', clean=True)
+    return(True, 'Step1 fin, mirror "Shape key" and click "Step2"')
+
     #new_ob.active_shape_key_index = i
+    #context.scene.update()
+    #bpy.ops.object.paths_update()
     bpy.ops.object.shape_key_mirror(use_topology=topology)
+    
+    source_shkey = new_ob.data.shape_keys.key_blocks[name]
+    target_shkey = ob.data.shape_keys.key_blocks[mirror_name]
+    
+    # relative key
+    rel_name = source_shkey.relative_key.name
+    mirror_rel_name = rel_name.replace(from_mirror, to_mirror)
+    if mirror_rel_name in ob.data.shape_keys.key_blocks:
+        target_shkey.relative_key = ob.data.shape_keys.key_blocks[mirror_rel_name]
+    
+    # vertices
+    for vtx in new_ob.data.vertices:
+        target_shkey.data[vtx.index].co = source_shkey.data[vtx.index].co[:]
+    
+    # remove new ob
+    #bpy.data.objects.remove(new_ob, do_unlink=True)
+    
+    return(True, 'Mirrored from "%s" to "%s"' % (source_shkey.name, target_shkey.name))
+
+def mirror_step_2(context):
+    pass
+    data = read_data(data_type='Steps')
+    print(data)
+    
+    #
+    new_ob = bpy.data.objects[data['new_ob_name']]
+    ob = bpy.data.objects[data['ob_name']]
+    name = data['name']
+    mirror_name = data['mirror_name']
+    from_mirror = data['from_mirror']
+    to_mirror = data['to_mirror']
+    topology = data['topology']
+    
 
     source_shkey = new_ob.data.shape_keys.key_blocks[name]
     target_shkey = ob.data.shape_keys.key_blocks[mirror_name]
@@ -396,7 +460,7 @@ def mirror_shape_key(context, name, topology, from_mirror='.L', to_mirror='.R'):
     # remove new ob
     bpy.data.objects.remove(new_ob, do_unlink=True)
     
-    return(True, 'Shape Key (%s) mirrored' % name)
+    return(True, 'Mirrored from "%s" to "%s"' % (source_shkey.name, target_shkey.name))
 
 def in_between(context, from_mirror='.L', to_mirror='.R'):
     pass
