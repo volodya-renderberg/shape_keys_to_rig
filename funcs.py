@@ -472,6 +472,10 @@ def in_between(context, from_mirror='.L', to_mirror='.R'):
         for point in base_fc.keyframe_points:
             if point.co[1]==0:
                 setattr(ob.data, attr_name, point.co[0])
+        if base_shape_key_name.endswith(from_mirror):
+            mr_attr_name = base_shape_key_name.replace(from_mirror, to_mirror).replace('.', '_')
+            exec('bpy.types.Mesh.%s =  bpy.props.FloatProperty(name = \"%s\", default=0.0)' % (mr_attr_name, mr_attr_name))
+            setattr(ob.data, mr_attr_name, point.co[0])
 
     # (6) method 1 (между нулём и блендом)
     if len(weights)==1:
@@ -541,7 +545,7 @@ def in_between(context, from_mirror='.L', to_mirror='.R'):
             if mirror_after_name in ob.data.shape_keys.key_blocks:
                 mirror_after_shkey = ob.data.shape_keys.key_blocks[mirror_after_name]
             else:
-                return(False, 'Shape Key not found by "%s" name' % mirror_after_name)
+                return(False, '#9 Shape Key not found by "%s" name' % mirror_after_name)
             
             # new shape key
             # -- test exists shape key
@@ -580,12 +584,12 @@ def in_between(context, from_mirror='.L', to_mirror='.R'):
         if before_shape_key_name in ob.data.shape_keys.key_blocks:
             before_shape_key = ob.data.shape_keys.key_blocks[before_shape_key_name]
         else:
-            return(False, 'Shape Key not found by "%s" name' % before_shape_key_name)
+            return(False, '#8 Shape Key not found by "%s" name' % before_shape_key_name)
         #
         if after_shape_key_name in ob.data.shape_keys.key_blocks:
             after_shape_key = ob.data.shape_keys.key_blocks[after_shape_key_name]
         else:
-            return(False, 'Shape Key not found by "%s" name' % after_shape_key_name)
+            return(False, '#7 Shape Key not found by "%s" name' % after_shape_key_name)
         
         # (7.2)
         key0 = list(weights.keys())[0]
@@ -630,12 +634,12 @@ def in_between(context, from_mirror='.L', to_mirror='.R'):
             if mirror_after_name in ob.data.shape_keys.key_blocks:
                 mirror_after_shkey = ob.data.shape_keys.key_blocks[mirror_after_name]
             else:
-                return(False, 'Shape Key not found by "%s" name' % mirror_after_name)
+                return(False, '#4 Shape Key not found by "%s" name' % mirror_after_name)
             # -- before
             if mirror_before_name in ob.data.shape_keys.key_blocks:
                 mirror_before_shkey = ob.data.shape_keys.key_blocks[mirror_before_name]
             else:
-                return(False, 'Shape Key not found by "%s" name' % mirror_before_name)
+                return(False, '#5 Shape Key not found by "%s" name' % mirror_before_name)
                 
             # new shape key
             # -- test exists shape key
@@ -694,7 +698,7 @@ def remove_in_between(context, from_mirror, to_mirror):
     except Exception as e:
         print(e)
         return(False, 'wrong number "%s"!' % shape_key.name.split('.')[2])
-    
+    #
     before_num = 0
     after_num = 1000
     before_shape_key = None
@@ -721,34 +725,83 @@ def remove_in_between(context, from_mirror, to_mirror):
             after_num = c_num
             after_shape_key = sh_key
     
-    # prints
-    #if before_shape_key:
-        #before_data = before_shape_key.name
-    #else:
-        #before_data = before_shape_key
-    #print('nbefore num: %s\nafter num: %s\nbefore shk: %s\nafter shk: %s' % (before_num, after_num, before_data, after_shape_key.name))
-    
-    
     # (3)
-    # -- after
     af_p0, af_p1, zero = get_two_points(ob, after_shape_key.name, base_shape_key.name)
     if before_shape_key:
-        bf_p0, bf_p1, zero = get_two_points(ob, before_shape_key.name, base_shape_key.name)
-        new_point = (tuple(bf_p1.co)[0], 0)
+        bf_p0, bf_p1, zero = get_two_points(ob, before_shape_key.name, base_shape_key.name, more=True)
+        after_new_point = (tuple(bf_p1.co)[0], 0)
+        before_new_point = (tuple(af_p1.co)[0], 0)
     else:
-        new_point = (zero, 0)
+        after_new_point = (zero, 0)
+    # -- after
     after_fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % after_shape_key.name)
     after_fc.keyframe_points.remove(af_p0)
-    after_fc.keyframe_points.insert(new_point[0], new_point[1])
-    
+    after_fc.keyframe_points.insert(after_new_point[0], after_new_point[1])
     # -- before
     if before_shape_key:
-        pass
-    
+        before_fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % before_shape_key.name)
+        before_fc.keyframe_points.remove(bf_p0)
+        before_fc.keyframe_points.insert(before_new_point[0], before_new_point[1])
+        
     # -- remove
     fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % shape_key.name)
-    context.scene.animation_data.action.fcurves.remove(fc)
+    #ob.data.animation_data.action.fcurves.remove(fc)
     bpy.ops.object.shape_key_remove(all=False)
+    
+    if mirror:
+        pass
+        #
+        name = shape_key.name.replace(fr_mr, to_mr)
+        if name in ob.data.shape_keys.key_blocks:
+            shape_key = ob.data.shape_keys.key_blocks[name]
+        else:
+            return(False, '#6 Shape Key not found by "%s" name' % name)
+        #
+        base_name = base_shape_key.name.replace(fr_mr, to_mr)
+        if base_name in ob.data.shape_keys.key_blocks:
+            base_shape_key = ob.data.shape_keys.key_blocks[base_name]
+        else:
+            return(False, '#3 Shape Key not found by "%s" name' % base_name)
+        #
+        if before_shape_key:
+            before_name = before_shape_key.name.replace(fr_mr, to_mr)
+            if before_name in ob.data.shape_keys.key_blocks:
+                before_shape_key = ob.data.shape_keys.key_blocks[before_name]
+            else:
+                return(False, '#2 Shape Key not found by "%s" name' % before_name)
+        #
+        after_name = after_shape_key.name.replace(fr_mr, to_mr)
+        if after_name in ob.data.shape_keys.key_blocks:
+            after_shape_key = ob.data.shape_keys.key_blocks[after_name]
+        else:
+            return(False, '#1 Shape Key not found by "%s" name' % after_name)
+        #
+        # (3 mirror)
+        af_p0, af_p1, zero = get_two_points(ob, after_shape_key.name, base_shape_key.name)
+        if before_shape_key:
+            bf_p0, bf_p1, zero = get_two_points(ob, before_shape_key.name, base_shape_key.name, more=True)
+            after_new_point = (tuple(bf_p1.co)[0], 0)
+            before_new_point = (tuple(af_p1.co)[0], 0)
+        else:
+            after_new_point = (zero, 0)
+        # -- after
+        after_fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % after_shape_key.name)
+        after_fc.keyframe_points.remove(af_p0)
+        after_fc.keyframe_points.insert(after_new_point[0], after_new_point[1])
+        # -- before
+        if before_shape_key:
+            before_fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % before_shape_key.name)
+            before_fc.keyframe_points.remove(bf_p0)
+            before_fc.keyframe_points.insert(before_new_point[0], before_new_point[1])
+            
+        # -- remove
+        for i,key in enumerate(ob.data.shape_keys.key_blocks.keys()):
+            if key == name:
+                ob.active_shape_key_index = i
+                break
+        fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % shape_key.name)
+        #ob.data.animation_data.action.fcurves.remove(fc)
+        bpy.ops.object.shape_key_remove(all=False)
     
     return(True, 'Remove: %s' % shape_key.name)
 

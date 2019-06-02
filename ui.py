@@ -60,9 +60,10 @@ class SHAPEKEYSTORIG_create_panel(bpy.types.Panel):
         
 class SHAPEKEYSTORIG_edit_panel(bpy.types.Panel):
     bl_label = 'In-Between Shape Keys:'
-    bl_space_type = "VIEW_3D"
-    bl_region_type = "TOOLS"
-    bl_category = 'ShKTls'
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "data"
+    #bl_category = 'ShKTls'
     #bl_options = {'DEFAULT_CLOSED'}
     
     def draw(self, context):
@@ -88,12 +89,16 @@ class SHAPEKEYSTORIG_edit_panel(bpy.types.Panel):
                 row=col.row(align = True)
                 row.label(key)
                 row.operator('shapekeystorig.mirror_shape_key', text='mirror').name=key
-                
-        col = layout.column(align = True)
-        col.operator('shapekeystorig.in_between', text='In-between for active')
+        
         
         col = layout.column(align = True)
-        col.operator('shapekeystorig.remove_in_between', text='Remove active In-between')
+        col.operator('shapekeystorig.mirror_active_shape_key', text='Mirror active')
+        
+        col = layout.column(align = True)
+        col.operator('shapekeystorig.in_between', text='ADD In-between for active')
+        
+        col = layout.column(align = True)
+        col.operator('shapekeystorig.remove_in_between', text='Remove In-between')
 
 class SHAPEKEYSTORIG_init(bpy.types.Operator):
     bl_idname = "shapekeystorig.init"
@@ -183,6 +188,29 @@ class SHAPEKEYSTORIG_mirror_shape_key(bpy.types.Operator):
     def invoke(self, context, event):
         return context.window_manager.invoke_props_dialog(self)
     
+class SHAPEKEYSTORIG_mirror_active_shape_key(bpy.types.Operator):
+    bl_idname = "shapekeystorig.mirror_active_shape_key"
+    bl_label = "Mirror Shape Key"
+    
+    from_mirror = bpy.props.StringProperty(name='From Mirror:', default='.L')
+    to_mirror = bpy.props.StringProperty(name='To Mirror:', default='.R')
+    topology = bpy.props.BoolProperty(name='Use Topology', default=False)
+    
+    def execute(self, context):
+        sh_key = bpy.context.object.active_shape_key
+        if not sh_key:
+            self.report({'WARNING'}, 'No active Shape Key!')
+            return{'FINISHED'}
+        b,r = fn.mirror_shape_key(context, sh_key.name, self.topology, from_mirror=self.from_mirror, to_mirror=self.to_mirror)
+        if b:
+            self.report({'INFO'}, r)
+        else:
+            self.report({'WARNING'}, r)
+        return{'FINISHED'}
+    
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self)
+    
 class SHAPEKEYSTORIG_in_between(bpy.types.Operator):
     bl_idname = "shapekeystorig.in_between"
     bl_label = "In-between"
@@ -237,6 +265,7 @@ def register():
     bpy.utils.register_class(SHAPEKEYSTORIG_mirror_shape_key)
     bpy.utils.register_class(SHAPEKEYSTORIG_in_between)
     bpy.utils.register_class(SHAPEKEYSTORIG_remove_in_between)
+    bpy.utils.register_class(SHAPEKEYSTORIG_mirror_active_shape_key)
     # unreg
     bpy.utils.register_class(SHAPEKEYSTORIG_unreg)
     
@@ -249,5 +278,6 @@ def unregister():
     bpy.utils.unregister_class(SHAPEKEYSTORIG_mirror_shape_key)
     bpy.utils.unregister_class(SHAPEKEYSTORIG_in_between)
     bpy.utils.unregister_class(SHAPEKEYSTORIG_remove_in_between)
+    bpy.utils.unregister_class(SHAPEKEYSTORIG_mirror_active_shape_key)
     # unreg
     bpy.utils.unregister_class(SHAPEKEYSTORIG_unreg)
