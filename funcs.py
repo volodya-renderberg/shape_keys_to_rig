@@ -578,6 +578,8 @@ def in_between(context, from_mirror='.L', to_mirror='.R'):
         #
         value = get_value(ob, after_shape_key_name, base_shape_key_name, weight)
         
+        print('method 1, value: %s' % str(value))
+        
         # (6.2)
         # -- new name
         if mirror:
@@ -903,14 +905,14 @@ def __make_in_between(ob, new_shape_key, after_shape_key, after, before, value, 
         before_fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % before_shape_key.name)
         
     #
-    print(after, before, weight)
+    print('__make_in_between', after, before, weight)
     # vertex position
     for v in ob.data.vertices:
         if before_shape_key:
-            before_v = before_shape_key.data[v.index].co
+            before_v = before_shape_key.data[v.index].co[:]
         else:
-            before_v = after_shape_key.relative_key.data[v.index].co
-        after_v = after_shape_key.data[v.index].co
+            before_v = after_shape_key.relative_key.data[v.index].co[:]
+        after_v = after_shape_key.data[v.index].co[:]
         #
         new_shape_key.data[v.index].co[0] = before_v[0] + (after_v[0] - before_v[0])*((weight - before)/(after - before))
         new_shape_key.data[v.index].co[1] = before_v[1] + (after_v[1] - before_v[1])*((weight - before)/(after - before))
@@ -922,32 +924,50 @@ def __make_in_between(ob, new_shape_key, after_shape_key, after, before, value, 
     # after
     # -- get points
     zero_point, p1, z = get_two_points(ob, after_shape_key.name, base_shape_key_name)
-    after_value=tuple(p1.co)[0]
+    after_value=tuple(p1.co[:])[0]
     # -- edit points
-    after_zero_value = tuple(zero_point.co)[0]
+    after_zero_value = tuple(zero_point.co[:])[0]
     after_fc.keyframe_points.remove(zero_point)
-    after_fc.keyframe_points.insert(value, 0)
+    #
+    for p in after_fc.keyframe_points:
+        p.co[0] = p.co[0]*1000
+    #
+    after_fc.keyframe_points.insert(value*1000, 0)
+    #
+    for p in after_fc.keyframe_points:
+        p.co[0] = p.co[0]/1000
+    #
     
     # -- before
     if before_shape_key:
         zero_point, bf_p1, z = get_two_points(ob, before_shape_key.name, base_shape_key_name, more=True)
-        befo_point = tuple(bf_p1.co)
+        befo_point = tuple(bf_p1.co[:])
         #print('&'*3, tuple(zero_point.co), befo_point)
         before_fc.keyframe_points.remove(zero_point)
-        before_fc.keyframe_points.insert(value, 0)
+        #
+        for p in before_fc.keyframe_points:
+            p.co[0] = p.co[0]*1000
+        #
+        before_fc.keyframe_points.insert(value*1000, 0)
+        #
+        for p in before_fc.keyframe_points:
+            p.co[0] = p.co[0]/1000
+        #
         
     # -- new
     new_f_curve = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % new_shape_key.name)
     #
     if before_shape_key:
         points = [(befo_point[0], 0), (value, 1), (after_value,0)]
-        #print('points with before:', points)
+        print('points with before:', points)
     else:
         points = [(z , 0), (value, 1), (after_value,0)]
-        #print('points*:', points)
+        print('points*:', points)
     for p in points:
-        point = new_f_curve.keyframe_points.insert(p[0],p[1])
+        point = new_f_curve.keyframe_points.insert(p[0]*1000, p[1])
         point.interpolation = 'LINEAR'
+    for p in new_f_curve.keyframe_points:
+        p.co[0] = p.co[0]/1000
     # -- remove modifier
     fmod = new_f_curve.modifiers[0]
     new_f_curve.modifiers.remove(fmod)
