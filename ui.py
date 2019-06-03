@@ -28,6 +28,11 @@ class SHAPEKEYSTORIG_create_panel(bpy.types.Panel):
         row.operator('shapekeystorig.init', text='Init Mesh').action='init_mesh'
         if 'mesh' in data:
             row.label(str(data.get('mesh')))
+	#
+        row = col.row(align = True)
+        row.operator('shapekeystorig.init', text='Init Root (bone)').action='root_bone'
+        if 'root_bone' in data:
+            row.label('%s:%s' % (str(data.get('root_bone')[0]), str(data.get('root_bone')[1])))
         #
         #col = layout.column(align = True)
         row = col.row(align = True)
@@ -115,6 +120,8 @@ class SHAPEKEYSTORIG_init(bpy.types.Operator):
             b,r = fn.init_parent_bone(context)
         elif self.action == 'init_mesh':
             b,r = fn.init_mesh(context)
+        elif self.action == 'root_bone':
+            b,r = fn.init_target(context, 'root_bone')
         elif self.action == 'target1':
             b,r = fn.init_target(context, 'target1')
         elif self.action == 'target2':

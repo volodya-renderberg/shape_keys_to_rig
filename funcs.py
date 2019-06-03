@@ -259,7 +259,8 @@ def make_shape_key(context, name, from_mirror='.L', to_mirror='.R'):
     var.type = 'TRANSFORMS'
     #
     targ = var.targets[0]
-    targ.id = bpy.data.objects[data['target1'][0]]
+    targ.id = bpy.data.objects[data['root_bone'][0]]
+    targ.bone_target = data['root_bone'][1]
     targ.transform_type = 'SCALE_X'
     targ.transform_space = 'WORLD_SPACE'
     #
@@ -313,7 +314,8 @@ def make_shape_key(context, name, from_mirror='.L', to_mirror='.R'):
         var.type = 'TRANSFORMS'
         #
         targ = var.targets[0]
-        targ.id = bpy.data.objects[data['target1'][0]]
+        targ.id = bpy.data.objects[data['root_bone'][0]]
+        targ.bone_target = data['root_bone'][1]
         targ.transform_type = 'SCALE_X'
         targ.transform_space = 'WORLD_SPACE'
         #
