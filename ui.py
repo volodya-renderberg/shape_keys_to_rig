@@ -14,10 +14,15 @@ class SHAPEKEYSTORIG_create_panel(bpy.types.Panel):
         
         layout = self.layout
         
+        col = layout.column(align = True)
+        row = col.row(align = True)
+        row.label('')
+        row.operator('shapekeystorig.manual', text='', icon='QUESTION')
+        
         layout.label('Make Auxiliary Bones:')
         col = layout.column(align = True)
         row = col.row(align = True)
-        row.operator('shapekeystorig.init', 'Init Partent Bone').action = 'init_parent_bone'
+        row.operator('shapekeystorig.init', text='Init Partent Bone').action = 'init_parent_bone'
         if 'armature' in data:
             row.label('%s:%s' % (str(data.get('armature')), str(data.get('parent_bone'))))
         col.operator('shapekeystorig.make_target_bone').height=0.01
@@ -97,15 +102,18 @@ class SHAPEKEYSTORIG_edit_panel(bpy.types.Panel):
         '''
         
         col = layout.column(align = True)
-        row = col.row(align=True)
-        row.operator('shapekeystorig.mirror_active_shape_key', text='MIRROR active /Step 1')
-        row.operator('shapekeystorig.mirror_active_shape_key_step2')
-        
-        col = layout.column(align = True)
         col.operator('shapekeystorig.in_between', text='ADD In-between for active')
         
         col = layout.column(align = True)
         col.operator('shapekeystorig.remove_in_between', text='REMOVE In-between')
+        
+        col = layout.column(align = True)
+        col.operator('shapekeystorig.vertices_to_basis', text='Vertices to Basis')
+        
+        col = layout.column(align = True)
+        row = col.row(align=True)
+        row.operator('shapekeystorig.mirror_active_shape_key', text='MIRROR active /Step 1')
+        row.operator('shapekeystorig.mirror_active_shape_key_step2')
 
 class SHAPEKEYSTORIG_init(bpy.types.Operator):
     bl_idname = "shapekeystorig.init"
@@ -268,6 +276,29 @@ class SHAPEKEYSTORIG_remove_in_between(bpy.types.Operator):
     
     def invoke(self, context, event):
         return context.window_manager.invoke_props_dialog(self)
+    
+class SHAPEKEYSTORIG_vertices_to_basis(bpy.types.Operator):
+    bl_idname = "shapekeystorig.vertices_to_basis"
+    bl_label = "Are you sure?"
+    
+    def execute(self, context):
+        b,r = fn.selected_vertices_to_basis_shape_key(context)
+        if b:
+            self.report({'INFO'}, r)
+        else:
+            self.report({'WARNING'}, r)
+        return{'FINISHED'}
+    
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self)
+    
+class SHAPEKEYSTORIG_manual(bpy.types.Operator):
+    bl_idname = "shapekeystorig.manual"
+    bl_label = "Help"
+    
+    def execute(self, context):
+        self.report({'INFO'}, 'It is Manual')
+        return{'FINISHED'}
 
 class SHAPEKEYSTORIG_unreg(bpy.types.Operator):
     bl_idname = "shapekeystorig.unreg"
@@ -288,6 +319,8 @@ def register():
     bpy.utils.register_class(SHAPEKEYSTORIG_remove_in_between)
     bpy.utils.register_class(SHAPEKEYSTORIG_mirror_active_shape_key)
     bpy.utils.register_class(SHAPEKEYSTORIG_mirror_active_shape_key_step2)
+    bpy.utils.register_class(SHAPEKEYSTORIG_vertices_to_basis)
+    bpy.utils.register_class(SHAPEKEYSTORIG_manual)
     # unreg
     bpy.utils.register_class(SHAPEKEYSTORIG_unreg)
     
@@ -302,5 +335,7 @@ def unregister():
     bpy.utils.unregister_class(SHAPEKEYSTORIG_remove_in_between)
     bpy.utils.unregister_class(SHAPEKEYSTORIG_mirror_active_shape_key)
     bpy.utils.unregister_class(SHAPEKEYSTORIG_mirror_active_shape_key_step2)
+    bpy.utils.unregister_class(SHAPEKEYSTORIG_vertices_to_basis)
+    bpy.utils.unregister_class(SHAPEKEYSTORIG_manual)
     # unreg
     bpy.utils.unregister_class(SHAPEKEYSTORIG_unreg)

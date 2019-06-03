@@ -873,6 +873,33 @@ def remove_in_between(context, from_mirror, to_mirror):
     
     return(True, 'Remove: %s' % shape_key.name)
 
+def selected_vertices_to_basis_shape_key(context):
+    pass
+    
+    ob = context.object
+    shape_key = ob.active_shape_key
+    base_shape_key = shape_key.relative_key
+    
+    if not shape_key or not base_shape_key:
+        return(False, 'Not found Shape_key or Basis Shape key!')
+
+    print('Basis name: "%s"' % base_shape_key.name)
+
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+
+    for v in ob.data.vertices:
+        if v.select:
+            p = base_shape_key.data[v.index].co[:]
+            print(p)
+            shape_key.data[v.index].co[0] = p[0]
+            shape_key.data[v.index].co[1] = p[1]
+            shape_key.data[v.index].co[2] = p[2]
+            
+    bpy.ops.object.mode_set(mode='EDIT')
+    
+    return(True, '"Vertices to Basis" is done!')
+
 # ========================== Utilits ==============================
 
 def copy_target(src, tgt):
