@@ -730,6 +730,7 @@ def remove_in_between(context, from_mirror, to_mirror):
 
     ob = context.object
     shape_key = ob.active_shape_key
+    shape_key_name = shape_key.name
     
     # (1)
     # -- parsing of name
@@ -797,19 +798,35 @@ def remove_in_between(context, from_mirror, to_mirror):
     af_p0, af_p1, zero = get_two_points(ob, after_shape_key.name, base_shape_key.name)
     if before_shape_key:
         bf_p0, bf_p1, zero = get_two_points(ob, before_shape_key.name, base_shape_key.name, more=True)
-        after_new_point = (tuple(bf_p1.co)[0], 0)
-        before_new_point = (tuple(af_p1.co)[0], 0)
+        after_new_point = (tuple(bf_p1.co[:])[0], 0)
+        before_new_point = (tuple(af_p1.co[:])[0], 0)
     else:
         after_new_point = (zero, 0)
     # -- after
     after_fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % after_shape_key.name)
     after_fc.keyframe_points.remove(af_p0)
-    after_fc.keyframe_points.insert(after_new_point[0], after_new_point[1])
+    #
+    for p in after_fc.keyframe_points:
+        p.co[0] = p.co[0]*1000
+    #
+    after_fc.keyframe_points.insert(after_new_point[0]*1000, after_new_point[1])
+    #
+    for p in after_fc.keyframe_points:
+        p.co[0] = p.co[0]/1000
+    #
     # -- before
     if before_shape_key:
         before_fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % before_shape_key.name)
         before_fc.keyframe_points.remove(bf_p0)
-        before_fc.keyframe_points.insert(before_new_point[0], before_new_point[1])
+        #
+        for p in before_fc.keyframe_points:
+            p.co[0] = p.co[0]*1000
+        #
+        before_fc.keyframe_points.insert(before_new_point[0]*1000, before_new_point[1])
+        #
+        for p in before_fc.keyframe_points:
+            p.co[0] = p.co[0]/1000
+        #
         
     # -- remove
     fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % shape_key.name)
@@ -819,7 +836,7 @@ def remove_in_between(context, from_mirror, to_mirror):
     if mirror:
         pass
         #
-        name = shape_key.name.replace(fr_mr, to_mr)
+        name = shape_key_name.replace(fr_mr, to_mr)
         if name in ob.data.shape_keys.key_blocks:
             shape_key = ob.data.shape_keys.key_blocks[name]
         else:
