@@ -1,3 +1,5 @@
+import webbrowser
+
 import bpy
 
 from . import funcs as fn
@@ -319,7 +321,8 @@ class SHAPEKEYSTORIG_manual(bpy.types.Operator):
     bl_label = "Help"
     
     def execute(self, context):
-        self.report({'INFO'}, 'It is Manual')
+        webbrowser.open_new_tab('https://github.com/volodya-renderberg/shape_keys_to_rig/blob/master/README.md')
+        #self.report({'INFO'}, 'It is Manual')
         return{'FINISHED'}
 
 class SHAPEKEYSTORIG_unreg(bpy.types.Operator):
