@@ -1,6 +1,10 @@
 import bpy
 
 from . import funcs as fn
+from . import settings
+
+def set_mirror_sides():
+	bpy.types.Scene.mirror_sides = bpy.props.EnumProperty(items = settings.SIDES, name = 'Mirror', update = None, default=settings.DEFAULT)
 
 class SHAPEKEYSTORIG_create_panel(bpy.types.Panel):
     bl_label = 'Shape Key To Rig - Create:'
@@ -18,6 +22,9 @@ class SHAPEKEYSTORIG_create_panel(bpy.types.Panel):
         row = col.row(align = True)
         row.label('')
         row.operator('shapekeystorig.manual', text='', icon='QUESTION')
+        
+        col = layout.column(align = True)
+        col.prop(context.scene, "mirror_sides")
         
         layout.label('Make Auxiliary Bones:')
         col = layout.column(align = True)
@@ -84,6 +91,15 @@ class SHAPEKEYSTORIG_edit_panel(bpy.types.Panel):
             mesh = bpy.data.objects[mesh_name]
         
         layout = self.layout
+        
+        col = layout.column(align = True)
+        row = col.row(align = True)
+        row.label('')
+        row.operator('shapekeystorig.manual', text='', icon='QUESTION')
+        
+        col = layout.column(align = True)
+        col.prop(context.scene, "mirror_sides")
+        
         '''
         col = layout.column(align = True)
         row = col.row(align = True)
@@ -323,6 +339,7 @@ def register():
     bpy.utils.register_class(SHAPEKEYSTORIG_manual)
     # unreg
     bpy.utils.register_class(SHAPEKEYSTORIG_unreg)
+    set_mirror_sides()
     
 def unregister():
     bpy.utils.unregister_class(SHAPEKEYSTORIG_create_panel)
