@@ -9,9 +9,18 @@ SIDES = [
 ('.right to .left',)*3,
 ]
 
+DATA = {
+'.L to .R':('.L', '.R'),
+'.R to .L':('.R', '.L'),
+'.l to .r':('.l', '.r'),
+'.r to .l':('.r', '.l'),
+'.left to .right':('.left', '.right'),
+'.right to .left':('.right', '.left'),
+}
+
 DEFAULT = '.L to .R'
-#default = '.R to .L'
-#default = '.l to .r'
-#default = '.r to .l'
-#default = '.left to .right'
-#default = '.right to .left'
+#DEFAULT = '.R to .L'
+#DEFAULT = '.l to .r'
+#DEFAULT = '.r to .l'
+#DEFAULT = '.left to .right'
+#DEFAULT = '.right to .left'

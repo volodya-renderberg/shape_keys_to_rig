@@ -168,11 +168,13 @@ class SHAPEKEYSTORIG_make_target_bone(bpy.types.Operator):
     name = bpy.props.StringProperty(name='Name:')
     height = bpy.props.FloatProperty(name='Height Bone')
     layer = bpy.props.IntProperty(name='Layer', default=27)
-    from_mirror = bpy.props.StringProperty(name='From Mirror:', default='.L')
-    to_mirror = bpy.props.StringProperty(name='To Mirror:', default='.R')
+    #from_mirror = bpy.props.StringProperty(name='From Mirror:', default='.L')
+    #to_mirror = bpy.props.StringProperty(name='To Mirror:', default='.R')
 
     def execute(self, context):
-        b,r = fn.make_target_bone(context, self.name, self.height, self.layer, from_mirror=self.from_mirror, to_mirror=self.to_mirror)
+        from_mirror, to_mirror = settings.DATA[context.scene.mirror_sides]
+                        
+        b,r = fn.make_target_bone(context, self.name, self.height, self.layer, from_mirror=from_mirror, to_mirror=to_mirror)
         if b:
             self.report({'INFO'}, r)
         else:
@@ -187,11 +189,12 @@ class SHAPEKEYSTORIG_make_shape_key(bpy.types.Operator):
     bl_label = "Make Shape Key"
     
     name = bpy.props.StringProperty(name='Name:')
-    from_mirror = bpy.props.StringProperty(name='From Mirror:', default='.L')
-    to_mirror = bpy.props.StringProperty(name='To Mirror:', default='.R')
+    #from_mirror = bpy.props.StringProperty(name='From Mirror:', default='.L')
+    #to_mirror = bpy.props.StringProperty(name='To Mirror:', default='.R')
     
     def execute(self, context):
-        b,r = fn.make_shape_key(context, self.name, from_mirror=self.from_mirror, to_mirror=self.to_mirror)
+        from_mirror, to_mirror = settings.DATA[context.scene.mirror_sides]
+        b,r = fn.make_shape_key(context, self.name, from_mirror=from_mirror, to_mirror=to_mirror)
         if b:
             self.report({'INFO'}, r)
         else:
@@ -206,12 +209,13 @@ class SHAPEKEYSTORIG_mirror_shape_key(bpy.types.Operator):
     bl_label = "Mirror Shape Key"
     
     name = bpy.props.StringProperty(name='Name:')
-    from_mirror = bpy.props.StringProperty(name='From Mirror:', default='.L')
-    to_mirror = bpy.props.StringProperty(name='To Mirror:', default='.R')
+    #from_mirror = bpy.props.StringProperty(name='From Mirror:', default='.L')
+    #to_mirror = bpy.props.StringProperty(name='To Mirror:', default='.R')
     topology = bpy.props.BoolProperty(name='Use Topology', default=False)
     
     def execute(self, context):
-        b,r = fn.mirror_shape_key(context, self.name, self.topology, from_mirror=self.from_mirror, to_mirror=self.to_mirror)
+        from_mirror, to_mirror = settings.DATA[context.scene.mirror_sides]
+        b,r = fn.mirror_shape_key(context, self.name, self.topology, from_mirror=from_mirror, to_mirror=to_mirror)
         if b:
             self.report({'INFO'}, r)
         else:
@@ -225,16 +229,17 @@ class SHAPEKEYSTORIG_mirror_active_shape_key(bpy.types.Operator):
     bl_idname = "shapekeystorig.mirror_active_shape_key"
     bl_label = "Mirror Shape Key"
     
-    from_mirror = bpy.props.StringProperty(name='From Mirror:', default='.L')
-    to_mirror = bpy.props.StringProperty(name='To Mirror:', default='.R')
+    #from_mirror = bpy.props.StringProperty(name='From Mirror:', default='.L')
+    #to_mirror = bpy.props.StringProperty(name='To Mirror:', default='.R')
     topology = bpy.props.BoolProperty(name='Use Topology', default=False)
     
     def execute(self, context):
+        from_mirror, to_mirror = settings.DATA[context.scene.mirror_sides]
         sh_key = bpy.context.object.active_shape_key
         if not sh_key:
             self.report({'WARNING'}, 'No active Shape Key!')
             return{'FINISHED'}
-        b,r = fn.mirror_shape_key(context, sh_key.name, self.topology, from_mirror=self.from_mirror, to_mirror=self.to_mirror, active=True)
+        b,r = fn.mirror_shape_key(context, sh_key.name, self.topology, from_mirror=from_mirror, to_mirror=to_mirror, active=True)
         if b:
             self.report({'INFO'}, r)
         else:
@@ -258,14 +263,16 @@ class SHAPEKEYSTORIG_mirror_active_shape_key_step2(bpy.types.Operator):
     
 class SHAPEKEYSTORIG_in_between(bpy.types.Operator):
     bl_idname = "shapekeystorig.in_between"
-    bl_label = "In-between"
+    #bl_label = "In-between"
+    bl_label = "Are you sure?"
     
     #method = bpy.props.BoolProperty(name='between adjacent', default = True)
-    from_mirror = bpy.props.StringProperty(name='From Mirror:', default='.L')
-    to_mirror = bpy.props.StringProperty(name='To Mirror:', default='.R')
+    #from_mirror = bpy.props.StringProperty(name='From Mirror:', default='.L')
+    #to_mirror = bpy.props.StringProperty(name='To Mirror:', default='.R')
     
     def execute(self, context):
-        b,r = fn.in_between(context, from_mirror=self.from_mirror, to_mirror=self.to_mirror)
+        from_mirror, to_mirror = settings.DATA[context.scene.mirror_sides]
+        b,r = fn.in_between(context, from_mirror=from_mirror, to_mirror=to_mirror)
         if b:
             self.report({'INFO'}, r)
         else:
@@ -281,8 +288,7 @@ class SHAPEKEYSTORIG_remove_in_between(bpy.types.Operator):
     bl_label = "Are you sure?"
     
     def execute(self, context):
-        from_mirror = '.L'
-        to_mirror = '.R'
+        from_mirror, to_mirror = settings.DATA[context.scene.mirror_sides]
         b,r = fn.remove_in_between(context, from_mirror, to_mirror)
         if b:
             self.report({'INFO'}, r)
