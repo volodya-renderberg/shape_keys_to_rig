@@ -1,5 +1,5 @@
 # Shape_keys_to_rig
-Addon for Blender 3d 2.79 (beta)
+Addon for Blender 3d 2.79 (alpha)
 
 - Сreating Shape keys with ready-made drivers.
 - In-between Shape keys tool.
