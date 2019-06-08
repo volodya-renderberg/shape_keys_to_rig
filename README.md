@@ -11,7 +11,7 @@ The Shape key creation panel is in the left side of 3D viewport toolbar ("T" pan
 ![image](https://user-images.githubusercontent.com/22092835/58975072-bb7b2a00-87cc-11e9-86eb-336791d23f20.png) <br/>
 A Shape key is created with a driver that counts the distance between the heads of two bones. For this it is convenient to create auxiliary bones.
 #### Сreating auxiliary bones:
-- This purpose is served by two buttons in the "Make Auxiliary Bones" section.<br/>
+- This purpose is served by two buttons in the section "Make Auxiliary Bones".<br/>
 - First you need to determine the parent bone for the future bone.<br/>
 - To do this, select the future parental bone and click on the button **"Init Parent Bone"**, bone name is displayed to the right of the button.<br/>
 - Next, select the bone position of which we want to track and click on the button **"Make Bone"**, then the dialog will open:<br/>
@@ -21,3 +21,10 @@ A Shape key is created with a driver that counts the distance between the heads 
   - The **"Height Bone"** field for the height of the bone to be created in units of the scene.<br/>
   - The **"Layer"** field for the bone layer to be created.<br/>
 - The head of the newly created auxiliary bone will coincide with the head of the selected bone.
+![image](https://user-images.githubusercontent.com/22092835/59151560-ec15ca80-8a3d-11e9-93ac-d527f710272c.png)
+#### Сreating Shape Keys:
+- Everything you need to create Shape Keys is in the section "Make Shape Keys".
+- The very first we define the mesh for which the Shape Key will be created:
+  - You need to select the mesh and click on the button **"Init Mesh"**.
+- Further it is required to determine the root bone of the character:
+  - You need to select the root bone and click on the button **"Init Root (Bone)"**.
