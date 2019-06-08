@@ -20,3 +20,4 @@ A Shape key is created with a driver that counts the distance between the heads 
     - The side designation must match the side designation in the **"Mirror"** field (use "from mirror" side). If you do not specify a side, only one bone will be created, and if you specify, two mirror-symmetric bones will be created.<br/>
   - The **"Height Bone"** field for the height of the bone to be created in units of the scene.<br/>
   - The **"Layer"** field for the bone layer to be created.<br/>
+- The head of the newly created auxiliary bone will coincide with the head of the selected bone.
