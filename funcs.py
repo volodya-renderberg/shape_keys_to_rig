@@ -159,26 +159,53 @@ def make_target_bone(context, name, height, layer, from_mirror='.L', to_mirror='
     
     # (5) make R bone
     if name.endswith(from_mirror):
-        new_name = '%s-%s' % (BONE_PREFIX, name.replace(from_mirror, to_mirror))
-        if new_name in rig.data.edit_bones:
+        new_name2 = '%s-%s' % (BONE_PREFIX, name.replace(from_mirror, to_mirror))
+        if new_name2 in rig.data.edit_bones:
             bpy.ops.object.mode_set(mode='POSE')
-            return(False, 'This name "%s" is not unique!' % new_name)
-        new_bone = rig.data.edit_bones.new(new_name)
-        new_bone.head = (-head_position[0], head_position[1], head_position[2])
-        new_bone.tail = (-tail_position[0], tail_position[1], tail_position[2])
-        new_bone.use_connect = False
-        new_bone.parent = rig.data.edit_bones[data['parent_bone'].replace(from_mirror, to_mirror)]
-        new_bone.use_deform = False
-        new_bone.layers = layers
+            return(False, 'This name "%s" is not unique!' % new_name2)
+        new_bone2 = rig.data.edit_bones.new(new_name2)
+        new_bone2.head = (-head_position[0], head_position[1], head_position[2])
+        new_bone2.tail = (-tail_position[0], tail_position[1], tail_position[2])
+        new_bone2.use_connect = False
+        new_bone2.parent = rig.data.edit_bones[data['parent_bone'].replace(from_mirror, to_mirror)]
+        new_bone2.use_deform = False
+        new_bone2.layers = layers
         
     bpy.ops.object.mode_set(mode='POSE')
     
-    # (6) Clead text
+    # matrix
+    pose_bone1 = rig.pose.bones[new_name]
+    pose_bone2 = rig.pose.bones[new_name2]
+    rotation1 = pose_bone1.rotation_quaternion[:]
+    rotation2 = pose_bone2.rotation_quaternion[:]
+    #
+    pose_bone1.matrix = target_bone.matrix
+    pose_bone1.rotation_quaternion = rotation1
+    #
+    '''
+    target_bone2_name = target_bone.name.replace(from_mirror, to_mirror)
+    if not target_bone2_name in rig.pose.bones:
+        clean_text(data)
+        return(False, 'Pose bone with name "%s" not found' % target_bone2_name)
+    target_bone2 = rig.pose.bones[target_bone2_name]
+    pose_bone2.matrix = target_bone2.matrix
+    pose_bone2.rotation_quaternion = rotation2
+    '''
+    location1 = pose_bone1.location[:]
+    pose_bone2.location = (-location1[0], location1[1], location1[2])
+    #
+    pose_bone1.lock_location = (True, True, True)
+    pose_bone2.lock_location = (True, True, True)
+    
+    clean_text(data)    
+    
+    return(True, 'Ok!')
+
+def clean_text(data):
+    # (6) Clean text
     for key in ['armature', 'parent_bone']:
         del data[key]
     write_data(data, clean=True)
-    
-    return(True, 'Ok!')
 
 def make_shape_key(context, name, from_mirror='.L', to_mirror='.R'):
     if not name:
