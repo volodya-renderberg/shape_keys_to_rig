@@ -16,6 +16,7 @@ A Shape key is created with a driver that counts the distance between the heads 
 - To do this, select the future parental bone and click on the button **"Init Parent Bone"**, bone name is displayed to the right of the button.<br/>
 - Next, select the bone position of which we want to track and click on the button **"Make Bone"**, then the dialog will open:<br/>
 ![image](https://user-images.githubusercontent.com/22092835/58979196-254c0180-87d6-11e9-8011-d1401e199235.png)<br/>
-- In the **Name** field, specify the name of the future bone. At the end of the name you can specify the right or left side. - The side designation must match the side designation in the **"Mirror"** field (use "from mirror" side). If you do not specify a side, only one bone will be created, and if you specify, two mirror-symmetric bones will be created.<br/>
-- The **"Height Bone"** field for the height of the bone to be created in units of the scene.<br/>
-- The **"Layer"** field for the bone layer to be created.<br/>
+  - In the **Name** field, specify the name of the future bone. At the end of the name you can specify the right or left side.
+    - The side designation must match the side designation in the **"Mirror"** field (use "from mirror" side). If you do not specify a side, only one bone will be created, and if you specify, two mirror-symmetric bones will be created.<br/>
+  - The **"Height Bone"** field for the height of the bone to be created in units of the scene.<br/>
+  - The **"Layer"** field for the bone layer to be created.<br/>
