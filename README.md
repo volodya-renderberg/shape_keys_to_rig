@@ -26,5 +26,9 @@ A Shape key is created with a driver that counts the distance between the heads 
 - Everything you need to create Shape Keys is in the section "Make Shape Keys".
 - The very first we define the mesh for which the Shape Key will be created:
   - You need to select the mesh and click on the button **"Init Mesh"**.
-- Further it is required to determine the root bone of the character:
+- Further it is required to determine the root bone of the character, whose scale will affect the size of the character:
   - You need to select the root bone and click on the button **"Init Root (Bone)"**.
+- Then you need to specify two bones, the distance between the heads of which will be taken into account by the driver:
+  - select the first bone and click on the button **"Init Target-1 (bone-head)"**.
+  - select the second bone and click on the button **"Init Target-2 (bone-head)"**.
+  - no matter which bone is first and which is second.
