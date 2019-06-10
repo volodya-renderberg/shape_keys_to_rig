@@ -35,6 +35,7 @@ A Shape key is created with a driver that counts the distance between the heads 
 ![image](https://user-images.githubusercontent.com/22092835/59177121-bec33c80-8b63-11e9-9804-ed7d0520c7e8.png)
 - Then you should determine the distance to enable (ON distance) and disable (OFF distance) the created Shape Key:
   - put the rig in the position at which the Shape Key should be included (it is best if the distance between the bones(Target-1 and Target-2) is as close as possible to zero).
+  ![image](https://user-images.githubusercontent.com/22092835/59181156-58441b80-8b6f-11e9-9800-321ffeb1a9ab.png)
   - click on the **"Init distance to ON"**.
   - put the rig in the position where the created Shape Key should be disabled.
   - click on the **"Init distance to OFF"**.
