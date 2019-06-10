@@ -41,6 +41,7 @@ A Shape key is created with a driver that counts the distance between the heads 
   ![image](https://user-images.githubusercontent.com/22092835/59181219-86296000-8b6f-11e9-8d33-444b7753e7dd.png)
   - click on the **"Init distance to OFF"**.
 - Clicking the **"Make Shape Key"** button will open a dialog box where you will need to specify the name of the Shape Key to be created. At the end of the name you can specify the right or left side.
+![image](https://user-images.githubusercontent.com/22092835/59181543-444ce980-8b70-11e9-8368-131c3f8f9e72.png)
   - The side designation must match the side designation in the **"Mirror"** field (use "from mirror" side). If you do not specify a side, only one Shape Key will be created, and if you specify, two mirror-symmetric Shape Keys will be created.
 - The created Shape Key will have a driver that will take into account the distance between the bones (Target-1 and Target-2).
   - while reducing the distance (to **"ON distance"**) - Shape Key will be enabled.
