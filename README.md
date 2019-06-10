@@ -32,3 +32,14 @@ A Shape key is created with a driver that counts the distance between the heads 
   - select the first bone and click on the button **"Init Target-1 (bone-head)"**.
   - select the second bone and click on the button **"Init Target-2 (bone-head)"**.
   - no matter which bone is first and which is second.
+![image](https://user-images.githubusercontent.com/22092835/59177121-bec33c80-8b63-11e9-9804-ed7d0520c7e8.png)
+- Then you should determine the distance to enable (ON distance) and disable (OFF distance) the created Shape Key:
+  - put the rig in the position at which the Shape Key should be included (it is best if the distance between the bones(Target-1 and Target-2) is as close as possible to zero).
+  - click on the **"Init distance to ON"**.
+  - put the rig in the position where the created Shape Key should be disabled.
+  - click on the **"Init distance to OFF"**.
+- Clicking the **"Make Shape Key"** button will open a dialog box where you will need to specify the name of the Shape Key to be created. At the end of the name you can specify the right or left side.
+  - The side designation must match the side designation in the **"Mirror"** field (use "from mirror" side). If you do not specify a side, only one Shape Key will be created, and if you specify, two mirror-symmetric Shape Keys will be created.
+- The created Shape Key will have a driver that will take into account the distance between the bones (Target-1 and Target-2).
+  - while reducing the distance (to **"ON distance"**) - Shape Key will be enabled.
+  - with increasing distance (to **"OFF distance"**) - Shape Key will be disabled.
