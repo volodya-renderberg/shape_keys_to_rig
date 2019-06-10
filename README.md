@@ -38,6 +38,7 @@ A Shape key is created with a driver that counts the distance between the heads 
   ![image](https://user-images.githubusercontent.com/22092835/59181156-58441b80-8b6f-11e9-9800-321ffeb1a9ab.png)
   - click on the **"Init distance to ON"**.
   - put the rig in the position where the created Shape Key should be disabled.
+  ![image](https://user-images.githubusercontent.com/22092835/59181219-86296000-8b6f-11e9-8d33-444b7753e7dd.png)
   - click on the **"Init distance to OFF"**.
 - Clicking the **"Make Shape Key"** button will open a dialog box where you will need to specify the name of the Shape Key to be created. At the end of the name you can specify the right or left side.
   - The side designation must match the side designation in the **"Mirror"** field (use "from mirror" side). If you do not specify a side, only one Shape Key will be created, and if you specify, two mirror-symmetric Shape Keys will be created.
