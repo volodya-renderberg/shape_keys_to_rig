@@ -59,7 +59,7 @@ To solve this problem, as well as for other cases when it is necessary to create
 
 The panel for this purpose is located in the **Property editor**.
 
-#### Creating an in-between form:
+#### Creating an in-between Shape key:
 
 - To create an in-between Shape key, you need to set the rig to the position for which the in-between form is required.
   - In our example, we will be bend about 90 degrees in the elbow.
@@ -70,3 +70,7 @@ The panel for this purpose is located in the **Property editor**.
   - Only in this case in-between Shape keys will be created for both the right and left sides.
 
 - Then click on the button **"ADD In-between for active"**.
+
+#### Overview of the created in-between Shape key:
+
+
