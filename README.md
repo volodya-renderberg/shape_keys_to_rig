@@ -6,9 +6,12 @@ Addon for Blender 3d 2.79 (alpha)
 - Mirror Shape keys.
 - Selected vertices to Basis state tool.
 
-## Сreating Shape keys with ready-made drivers:
+## Сreating Shape keys with ready-made drivers.
+
 The Shape key creation panel is in the left side of 3D viewport toolbar ("T" panel).
+
 ![image](https://user-images.githubusercontent.com/22092835/58975072-bb7b2a00-87cc-11e9-86eb-336791d23f20.png) <br/>
+
 A Shape key is created with a driver that counts the distance between the heads of two bones. For this it is convenient to create auxiliary bones.
 #### Сreating auxiliary bones:
 - This purpose is served by two buttons in the section "Make Auxiliary Bones".<br/>
@@ -46,3 +49,24 @@ A Shape key is created with a driver that counts the distance between the heads 
 - The created Shape Key will have a driver that will take into account the distance between the bones (Target-1 and Target-2).
   - while reducing the distance (to **"ON distance"**) - Shape Key will be enabled.
   - with increasing distance (to **"OFF distance"**) - Shape Key will be disabled.
+
+## In-between Shape keys tool.
+
+One Shape Key may not be enough.<br/>
+One Shape Key may be well suited for the final form, but poorly suited for intermediate positions.
+
+To solve this problem, as well as for other cases when it is necessary to create non-linear deformations (e.g. sliding), in-between forms are used.
+
+The panel for this purpose is located in the **Property editor**.
+
+#### Creating an in-between form:
+
+- To create an in-between Shape key, you need to set the rig to the position for which the in-between form is required.
+  - In our example, we will be bend about 90 degrees in the elbow.
+
+- Then it is necessary to select the Shape key for which the in-between form is created.
+  - **It matters** the Shape key for which side to choose, **left** or **right**.
+  - The designation of the side must match the designation of the side in the field **"Mirror"** and you must choose the side "from mirror".
+  - Only in this case in-between Shape keys will be created for both the right and left sides.
+
+- Then click on the button **"ADD In-between for active"**.
