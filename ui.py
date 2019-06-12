@@ -135,6 +135,13 @@ class SHAPEKEYSTORIG_edit_panel(bpy.types.Panel):
         col.operator('shapekeystorig.vertices_to_basis', text='Vertices to Basis')
         
         col = layout.column(align = True)
+        col.label('Copy Shape Key:')
+        row = col.row(align = True)
+        row.operator('shapekeystorig.init', text='Init Source').action='from_shape_key'
+        if 'from_shape_key' in data:
+            row.label(str(data.get('from_shape_key')))
+        
+        col = layout.column(align = True)
         row = col.row(align=True)
         row.operator('shapekeystorig.mirror_active_shape_key', text='MIRROR active /Step 1')
         row.operator('shapekeystorig.mirror_active_shape_key_step2')
@@ -162,6 +169,8 @@ class SHAPEKEYSTORIG_init(bpy.types.Operator):
             b,r = fn.init_distance(context, 'on_distance')
         elif self.action == 'off_distance':
             b,r = fn.init_distance(context, 'off_distance')
+        elif self.action == 'from_shape_key':
+            b,r = fn.init_distance(context, 'from_shape_key')
         # reports
         if b:
             self.report({'INFO'}, r)
