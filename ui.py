@@ -137,9 +137,10 @@ class SHAPEKEYSTORIG_edit_panel(bpy.types.Panel):
         col = layout.column(align = True)
         col.label('Copy Shape Key:')
         row = col.row(align = True)
-        row.operator('shapekeystorig.init', text='Init Source').action='from_shape_key'
-        if 'from_shape_key' in data:
-            row.label(str(data.get('from_shape_key')))
+        row.operator('shapekeystorig.init', text='Init Source').action='source_shape_key'
+        if 'source_shape_key' in data:
+            row.label(str(data.get('source_shape_key')))
+        row.operator('shapekeystorig.copy_shape_key')
         
         col = layout.column(align = True)
         row = col.row(align=True)
@@ -169,8 +170,8 @@ class SHAPEKEYSTORIG_init(bpy.types.Operator):
             b,r = fn.init_distance(context, 'on_distance')
         elif self.action == 'off_distance':
             b,r = fn.init_distance(context, 'off_distance')
-        elif self.action == 'from_shape_key':
-            b,r = fn.init_distance(context, 'from_shape_key')
+        elif self.action == 'source_shape_key':
+            b,r = fn.init_shape_key(context, 'source_shape_key')
         # reports
         if b:
             self.report({'INFO'}, r)
@@ -266,6 +267,18 @@ class SHAPEKEYSTORIG_mirror_active_shape_key(bpy.types.Operator):
     def invoke(self, context, event):
         return context.window_manager.invoke_props_dialog(self)
     
+class SHAPEKEYSTORIG_copy_shape_key(bpy.types.Operator):
+    bl_idname = "shapekeystorig.copy_shape_key"
+    bl_label = "Copy to active"
+    
+    def execute(self, context):
+        b,r = fn.copy_shape_key(context)
+        if b:
+            self.report({'INFO'}, r)
+        else:
+            self.report({'WARNING'}, r)
+        return{'FINISHED'}
+
 class SHAPEKEYSTORIG_mirror_active_shape_key_step2(bpy.types.Operator):
     bl_idname = "shapekeystorig.mirror_active_shape_key_step2"
     bl_label = "Step 2"
@@ -361,6 +374,7 @@ def register():
     bpy.utils.register_class(SHAPEKEYSTORIG_mirror_active_shape_key_step2)
     bpy.utils.register_class(SHAPEKEYSTORIG_vertices_to_basis)
     bpy.utils.register_class(SHAPEKEYSTORIG_manual)
+    bpy.utils.register_class(SHAPEKEYSTORIG_copy_shape_key)
     # unreg
     bpy.utils.register_class(SHAPEKEYSTORIG_unreg)
     set_mirror_sides()
@@ -378,5 +392,6 @@ def unregister():
     bpy.utils.unregister_class(SHAPEKEYSTORIG_mirror_active_shape_key_step2)
     bpy.utils.unregister_class(SHAPEKEYSTORIG_vertices_to_basis)
     bpy.utils.unregister_class(SHAPEKEYSTORIG_manual)
+    bpy.utils.unregister_class(SHAPEKEYSTORIG_copy_shape_key)
     # unreg
     bpy.utils.unregister_class(SHAPEKEYSTORIG_unreg)

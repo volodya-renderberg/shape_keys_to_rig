@@ -117,6 +117,50 @@ def init_distance(context, distance_name):
     
     return(True, '%s - %s' % (distance_name, str(distance)))
 
+def init_shape_key(context, key_name):
+    shape_key = context.object.active_shape_key
+    if not shape_key:
+        return(False, 'No active Shape key')
+
+    write_data({'source_shape_key': shape_key.name})
+
+    return(True, 'Ok: %s' % shape_key.name)
+
+def copy_shape_key(context):
+    pass
+    # get target
+    ob = context.object
+    target_shape_key = ob.active_shape_key
+    if not target_shape_key:
+        return(False, 'No active Shape key')
+    
+    # get source
+    data = read_data()
+    if not data.get('source_shape_key'):
+        return(False, 'Source Shape Key not defined!')
+    if not data.get('source_shape_key') in ob.data.shape_keys.key_blocks:
+        return(False, 'No source Shape Key with this name("%s") was found!' % data.get('source_shape_key'))
+    
+    source_shape_key = ob.data.shape_keys.key_blocks[data.get('source_shape_key')]
+    
+    #
+    if source_shape_key.name == target_shape_key.name:
+        return(False, 'Source and Target match!')
+    
+    # apply
+    for v in ob.data.vertices:
+        p = source_shape_key.data[v.index].co[:]
+        #print(p)
+        target_shape_key.data[v.index].co[0] = p[0]
+        target_shape_key.data[v.index].co[1] = p[1]
+        target_shape_key.data[v.index].co[2] = p[2]
+    
+    # clean data
+    del data['source_shape_key']
+    write_data(data, clean=True)
+    
+    return(True, 'Shape key copied!')
+
 def make_target_bone(context, name, height, layer, from_mirror='.L', to_mirror='.R'):
     pass
     # (1) testing
@@ -951,7 +995,7 @@ def selected_vertices_to_basis_shape_key(context):
     for v in ob.data.vertices:
         if v.select:
             p = base_shape_key.data[v.index].co[:]
-            print(p)
+            #print(p)
             shape_key.data[v.index].co[0] = p[0]
             shape_key.data[v.index].co[1] = p[1]
             shape_key.data[v.index].co[2] = p[2]
