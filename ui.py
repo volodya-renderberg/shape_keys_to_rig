@@ -6,7 +6,7 @@ from . import funcs as fn
 from . import settings
 
 def set_mirror_sides():
-	bpy.types.Scene.mirror_sides = bpy.props.EnumProperty(items = settings.SIDES, name = 'Mirror', update = None, default=settings.DEFAULT)
+    bpy.types.Scene.mirror_sides = bpy.props.EnumProperty(items = settings.SIDES, name = 'Mirror', update = None, default=settings.DEFAULT)
 
 class SHAPEKEYSTORIG_create_panel(bpy.types.Panel):
     bl_label = 'Shape Key To Rig - Create:'
@@ -84,6 +84,12 @@ class SHAPEKEYSTORIG_edit_panel(bpy.types.Panel):
     bl_context = "data"
     #bl_category = 'ShKTls'
     #bl_options = {'DEFAULT_CLOSED'}
+    
+    @classmethod
+    def poll(self, context):
+        if context.object.type == 'MESH':
+            return(True)
+        return(False)
     
     def draw(self, context):
         data = fn.read_data()
