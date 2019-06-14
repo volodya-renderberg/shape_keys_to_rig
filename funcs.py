@@ -202,6 +202,7 @@ def make_target_bone(context, name, height, layer, from_mirror='.L', to_mirror='
     new_bone.layers = layers
     
     # (5) make R bone
+    new_name2 = ''
     if name.endswith(from_mirror):
         new_name2 = '%s-%s' % (BONE_PREFIX, name.replace(from_mirror, to_mirror))
         if new_name2 in rig.data.edit_bones:
@@ -219,12 +220,19 @@ def make_target_bone(context, name, height, layer, from_mirror='.L', to_mirror='
     
     # matrix
     pose_bone1 = rig.pose.bones[new_name]
-    pose_bone2 = rig.pose.bones[new_name2]
     rotation1 = pose_bone1.rotation_quaternion[:]
-    rotation2 = pose_bone2.rotation_quaternion[:]
-    #
     pose_bone1.matrix = target_bone.matrix
     pose_bone1.rotation_quaternion = rotation1
+    pose_bone1.lock_location = (True, True, True)
+    
+    if new_name2:
+        pose_bone2 = rig.pose.bones[new_name2]
+        rotation2 = pose_bone2.rotation_quaternion[:]
+        location1 = pose_bone1.location[:]
+        pose_bone2.location = (-location1[0], location1[1], location1[2])
+        pose_bone2.lock_location = (True, True, True)
+    #
+    
     #
     '''
     target_bone2_name = target_bone.name.replace(from_mirror, to_mirror)
@@ -235,12 +243,7 @@ def make_target_bone(context, name, height, layer, from_mirror='.L', to_mirror='
     pose_bone2.matrix = target_bone2.matrix
     pose_bone2.rotation_quaternion = rotation2
     '''
-    location1 = pose_bone1.location[:]
-    pose_bone2.location = (-location1[0], location1[1], location1[2])
     #
-    pose_bone1.lock_location = (True, True, True)
-    pose_bone2.lock_location = (True, True, True)
-    
     clean_text(data)    
     
     return(True, 'Ok!')
