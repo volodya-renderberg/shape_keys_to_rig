@@ -108,23 +108,6 @@ class SHAPEKEYSTORIG_edit_panel(bpy.types.Panel):
         col = layout.column(align = True)
         col.prop(context.scene, "mirror_sides")
         
-        '''
-        col = layout.column(align = True)
-        row = col.row(align = True)
-        row.operator('shapekeystorig.init', text='Init Mesh').action='init_mesh'
-        if 'mesh' in data:
-            row.label(str(data.get('mesh')))
-        
-        col = layout.column(align = True)
-        if mesh and mesh.data.shape_keys:
-            for key in mesh.data.shape_keys.key_blocks.keys():
-                if not key.startswith(fn.SHAPE_KEY_PREFIX):
-                    continue
-                row=col.row(align = True)
-                row.label(key)
-                row.operator('shapekeystorig.mirror_shape_key', text='mirror').name=key
-        '''
-        
         col = layout.column(align = True)
         col.operator('shapekeystorig.in_between', text='ADD In-between for active')
         
@@ -146,6 +129,15 @@ class SHAPEKEYSTORIG_edit_panel(bpy.types.Panel):
         row = col.row(align=True)
         row.operator('shapekeystorig.mirror_active_shape_key', text='MIRROR active /Step 1')
         row.operator('shapekeystorig.mirror_active_shape_key_step2')
+        
+        col = layout.column(align = True)
+        col.label(text='Import / Export:')
+        row = col.row(align=True)
+        row.operator('shapekeystorig.import_export_data', text='Export All Shape Keys').action='export_all'
+        row.operator('shapekeystorig.import_export_data', text='Export active Shape Key').action='export_single'
+        row = col.row(align=True)
+        row.operator('shapekeystorig.import_export_data', text='Import All Shape Keys').action='import_all'
+        row.operator('shapekeystorig.import_export_data', text='Import to active Shape Key').action='import_single'
 
 class SHAPEKEYSTORIG_init(bpy.types.Operator):
     bl_idname = "shapekeystorig.init"
@@ -361,6 +353,30 @@ class SHAPEKEYSTORIG_unreg(bpy.types.Operator):
         unregister()
         return{'FINISHED'}
 
+class SHAPEKEYSTORIG_import_export_data(bpy.types.Operator):
+    bl_idname = "shapekeystorig.import_export_data"
+    bl_label = "Import / Export data"
+    
+    action= bpy.props.StringProperty()
+
+    def execute(self, context):
+        if self.action == 'export_all':
+            b,r = fn.export_shape_keys(context, all=True)
+        if self.action == 'export_single':
+            b,r = fn.export_shape_keys(context, all=False)
+        if self.action == 'import_all':
+            b,r = fn.import_shape_keys(context, all=True)
+        if self.action == 'import_single':
+            b,r = fn.import_shape_keys(context, all=False)
+        else:
+            return{'FINISHED'}
+        if b:
+            self.report({'INFO'}, r)
+        else:
+            self.report({'WARNING'}, r)
+        
+        return{'FINISHED'}
+
 def register():
     bpy.utils.register_class(SHAPEKEYSTORIG_create_panel)
     bpy.utils.register_class(SHAPEKEYSTORIG_edit_panel)
@@ -375,6 +391,7 @@ def register():
     bpy.utils.register_class(SHAPEKEYSTORIG_vertices_to_basis)
     bpy.utils.register_class(SHAPEKEYSTORIG_manual)
     bpy.utils.register_class(SHAPEKEYSTORIG_copy_shape_key)
+    bpy.utils.register_class(SHAPEKEYSTORIG_import_export_data)
     # unreg
     bpy.utils.register_class(SHAPEKEYSTORIG_unreg)
     set_mirror_sides()
@@ -393,5 +410,6 @@ def unregister():
     bpy.utils.unregister_class(SHAPEKEYSTORIG_vertices_to_basis)
     bpy.utils.unregister_class(SHAPEKEYSTORIG_manual)
     bpy.utils.unregister_class(SHAPEKEYSTORIG_copy_shape_key)
+    bpy.utils.unregister_class(SHAPEKEYSTORIG_import_export_data)
     # unreg
     bpy.utils.unregister_class(SHAPEKEYSTORIG_unreg)

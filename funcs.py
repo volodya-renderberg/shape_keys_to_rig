@@ -5,23 +5,47 @@ import tempfile
 import json
 import sys
 
-ARMATURE_DATA_FILE_NAME = '.shape_keys_to_rig_armature_data.json' # keys: armature, parent_bone, mesh
-MESH_DATA_FILE_NAME = '.shape_keys_to_rig_mesh_data.json' # keys: mesh,
-TO_STEP_DATA_FILE_NAME = '.shape_keys_to_to_step_data' # для пошагового миррора.
+ARMATURE_DATA_FILE_NAME = '.shktrig_armature_data.json' # keys: armature, parent_bone, mesh
+MESH_DATA_FILE_NAME = '.shktrig_mesh_data.json' # keys: mesh,
+TO_STEP_DATA_FILE_NAME = '.shktrig_to_step_data' # для пошагового миррора.
 BONE_PREFIX = 'AUXBS'
 SHAPE_KEY_PREFIX = 'aux'
+SHAPE_KEYS_DATA_FILE = '.shktrig_shape_keys_data'
+TEXT_DATA_BLOCK_OF_TASK_DATA = 'current_task'
 
 def set_float(self, value):
     self["zero"] = value
+    
+def get_root():
+    root = activity_path = None
+    if TEXT_DATA_BLOCK_OF_TASK_DATA in bpy.data.texts:
+        data_dict = json.loads(bpy.data.texts[TEXT_DATA_BLOCK_OF_TASK_DATA].as_string())
+        asset_path = data_dict.get('current_task').get('asset_path')
+        activity_name = data_dict.get('activites').get('meta_data')
+        if asset_path and activity_name:
+            activity_path = os.path.normpath(os.path.join(asset_path, activity_name))
+            if os.path.exists(activity_path):
+                root = activity_path
+            else:
+                root = tempfile.gettempdir()
+    else:
+        root = tempfile.gettempdir()
+    return(root)
 
 # data_type (str) - in 'Armature', 'Mesh', 'Steps'
 def write_data(data, data_type='Armature', clean=False):
+    pass
+    root = get_root()
+    
+    #
     if data_type=='Armature':
-        path = os.path.join(tempfile.gettempdir(), ARMATURE_DATA_FILE_NAME)
+        path = os.path.join(root, ARMATURE_DATA_FILE_NAME)
     elif data_type=='Mesh':
-        path = os.path.join(tempfile.gettempdir(), MESH_DATA_FILE_NAME)
+        path = os.path.join(root, MESH_DATA_FILE_NAME)
     elif data_type=='Steps':
-        path = os.path.join(tempfile.gettempdir(), TO_STEP_DATA_FILE_NAME)
+        path = os.path.join(root, TO_STEP_DATA_FILE_NAME)
+    elif data_type == 'Shape_keys':
+        path = os.path.join(root, SHAPE_KEYS_DATA_FILE)
     else:
         return
     #
@@ -35,15 +59,20 @@ def write_data(data, data_type='Armature', clean=False):
             rdata[key] = data[key]
         with open(path, 'w') as outfile:
             json.dump(rdata, outfile, sort_keys=True, indent=4)
-
+            
 # data_type (str) - in 'Armature', 'Mesh'
 def read_data(data_type='Armature'):
+    pass
+    root = get_root()
+    
     if data_type=='Armature':
-        path = os.path.join(tempfile.gettempdir(), ARMATURE_DATA_FILE_NAME)
+        path = os.path.join(root, ARMATURE_DATA_FILE_NAME)
     elif data_type=='Mesh':
-        path = os.path.join(tempfile.gettempdir(), MESH_DATA_FILE_NAME)
+        path = os.path.join(root, MESH_DATA_FILE_NAME)
     elif data_type=='Steps':
-        path = os.path.join(tempfile.gettempdir(), TO_STEP_DATA_FILE_NAME)
+        path = os.path.join(root, TO_STEP_DATA_FILE_NAME)
+    elif data_type == 'Shape_keys':
+        path = os.path.join(root, SHAPE_KEYS_DATA_FILE)
     else:
         return
     #
@@ -1006,6 +1035,60 @@ def selected_vertices_to_basis_shape_key(context):
     bpy.ops.object.mode_set(mode='EDIT')
     
     return(True, '"Vertices to Basis" is done!')
+
+def export_shape_keys(context, all=True):
+    pass
+    ob = context.object
+    shape_keys = {}
+    
+    if not all:
+        sh_key = ob.active_shape_key
+        if not sh_key:
+            return(False, 'No active Shape Key!')
+    
+        shape_keys[sh_key.name]={}
+        for v in ob.data.vertices:
+            shape_keys[sh_key.name][v.index] = tuple(sh_key.data[v.index].co[:])
+    
+        write_data(shape_keys, data_type='Shape_keys')
+    
+    if all:
+        for sh_key in ob.data.shape_keys.key_blocks:
+            shape_keys[sh_key.name]={}
+            for v in ob.data.vertices:
+                shape_keys[sh_key.name][v.index] = tuple(sh_key.data[v.index].co[:])
+    
+        write_data(shape_keys, data_type='Shape_keys', clean=True)
+        
+    return(True, 'Data saved')
+        
+def import_shape_keys(context, all=True):
+    pass
+    ob = context.object
+    data = read_data(data_type='Shape_keys')
+    
+    if all:
+        for sh_key in ob.data.shape_keys.key_blocks:
+            if sh_key.name in data.keys():
+                for v in ob.data.vertices:
+                    sh_key.data[v.index].co[0] = data[sh_key.name][str(v.index)][0]
+                    sh_key.data[v.index].co[1] = data[sh_key.name][str(v.index)][1]
+                    sh_key.data[v.index].co[2] = data[sh_key.name][str(v.index)][2]
+                    
+    if not all:
+        sh_key = ob.active_shape_key
+        if not sh_key:
+            return(False, 'No active Shape Key!')
+        
+        if sh_key.name in data.keys():
+            for v in ob.data.vertices:
+                sh_key.data[v.index].co[0] = data[sh_key.name][str(v.index)][0]
+                sh_key.data[v.index].co[1] = data[sh_key.name][str(v.index)][1]
+                sh_key.data[v.index].co[2] = data[sh_key.name][str(v.index)][2]
+        else:
+            return(False, 'No saved data for %s' % sh_key.name)
+    
+    return(True, 'Data loaded')
 
 # ========================== Utilits ==============================
 
