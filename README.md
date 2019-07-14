@@ -12,6 +12,8 @@ Addon for Blender 3d v2.79 (betta)
 
 #### way 1
 
+Place addon folder in blender addons directory.
+
 #### way 2
 Running the following commands in a linux terminal:
 ```
