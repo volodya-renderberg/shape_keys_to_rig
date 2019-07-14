@@ -4,9 +4,8 @@ Addon for Blender 3d v2.79 (betta)
 - [Install](#install)
 - [Сreating Shape keys with ready-made drivers](#сreating-shape-keys-with-ready-made-drivers).
 - [In-between Shape keys tool](#in-between-shape-keys-tool).
-- [in-between Shape keys removal](#in-between-shape-keys-removal).
 - [Selected vertices to Basis state tool](#selected-vertices-to-basis-state-tool).
-- [Copy Shape Key Data](#copy_shape_key_data).
+- [Copy Shape Key Data](#copy-shape-key-data).
 - [Mirror Shape keys](#mirror-shape-keys).
 - [Import/Export Shape Keys](#importexport-shape-keys).
 
