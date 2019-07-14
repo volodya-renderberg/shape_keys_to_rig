@@ -18,11 +18,11 @@ Running the following commands in a linux terminal:
 cd ~/.config/blender/2.79/scripts/addons
 git clone https://github.com/volodya-renderberg/shape_keys_to_rig.git
 ```
-and to update the addon to the latest version execute these commands
+and to update the addon to the latest version execute these commands:
 ```
 cd ~/.config/blender/2.79/scripts/addons/shape_keys_to_rig
 git fetch
-git pull origin master
+git pull
 ```
 
 ## Сreating Shape keys with ready-made drivers.
