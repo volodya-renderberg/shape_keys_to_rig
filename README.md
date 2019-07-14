@@ -92,7 +92,7 @@ The panel for this purpose is located in the **Property editor**.
   - Only in this case in-between Shape keys will be created for both the right and left sides.
 
 - Then click on the button **"ADD In-between for active"**.
-- img
+![image](https://user-images.githubusercontent.com/22092835/61184496-153a0400-a657-11e9-8fa1-4a0c10fc650b.png)
 
 #### Overview of the created in-between Shape key:
 
@@ -100,9 +100,9 @@ The panel for this purpose is located in the **Property editor**.
 - The name of the created Shape Keys differs from the base name by adding a number, which is the relative distance between **ON** and **OFF** distances.
 - A new Shape Key will be created from the current state of the Shape Keys.
 - The created Shape Keys has the same driver, but receives new key frame points, with a value of **1** at the point of the corresponding relative position when creating this Shape Keys, and with values of **0** - at the points corresponding to the values equal to **1** of the nearest Shape Keyss (see picture).
-- img
+![image](https://user-images.githubusercontent.com/22092835/61184617-8d54f980-a658-11e9-99b2-65cc94d4642b.png)
 - the number of in-between Shape Keys can be any.
-- img
+- ![image](https://user-images.githubusercontent.com/22092835/61184750-01dc6800-a65a-11e9-8c2e-40c49364ba62.png)
 
 #### in-between Shape keys removal:
 
