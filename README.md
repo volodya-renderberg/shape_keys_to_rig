@@ -102,32 +102,31 @@ The panel for this purpose is located in the **Property editor**.
 - The created Shape Keys has the same driver, but receives new key frame points, with a value of **1** at the point of the corresponding relative position when creating this Shape Keys, and with values of **0** - at the points corresponding to the values equal to **1** of the nearest Shape Keyss (see picture).
 ![image](https://user-images.githubusercontent.com/22092835/61184617-8d54f980-a658-11e9-99b2-65cc94d4642b.png)
 - the number of in-between Shape Keys can be any.
-- ![image](https://user-images.githubusercontent.com/22092835/61184750-01dc6800-a65a-11e9-8c2e-40c49364ba62.png)
+![image](https://user-images.githubusercontent.com/22092835/61184750-01dc6800-a65a-11e9-8c2e-40c49364ba62.png)
 
 #### in-between Shape keys removal:
 
 - Select the Shape Key to be deleted and click on the **REMOVE in-between** button.
   - The choice of the side does not matter, both will be deleted.
   - Key frame points of the remaining Shape Kes will be recalculated for adequate work.
-  - img
   > In version 2.79, the animation curves themselves are not deleted, they are underlined in red and must be removed manually. In version 2.8, there is no such problem anymore.
-  - img
+  ![image](https://user-images.githubusercontent.com/22092835/61184796-65ff2c00-a65a-11e9-8b99-de716eb788b3.png)
   
 ## Selected vertices to Basis state tool.
 
 Often it is required to return a part of the vertices of the active Shape Key to its original state.
 - To do this, in the editing mode, select the desired vertices and click on the button - **Vertices to Basis**.
-- img
+![image](https://user-images.githubusercontent.com/22092835/61184817-99da5180-a65a-11e9-9d76-cf75d4ee037f.png)
 - The selected vertices will return to their original state.
   
 ## Copy Shape Key Data.
 
 Sometimes you want to copy a form from one Shape Key to another.
 For this:
-- Select the Shape Key to be copied and click on the **Init Source** button, рядом с кнопкой отобразится имя этого шейп кея.
-- img
+- Select the Shape Key to be copied and click on the **Init Source** button, the name of this shape key will be displayed next to the button.
+![image](https://user-images.githubusercontent.com/22092835/61184847-e6be2800-a65a-11e9-966d-dbe9960808df.png)
 - Select the Shape Key into which we copy and click on the **Copy to active** button.
-- img
+![image](https://user-images.githubusercontent.com/22092835/61184860-081f1400-a65b-11e9-84f1-8fa0a6cccd8a.png)
 - this shape key will be fully consistent with the source.
 
 ## Mirror Shape keys.
@@ -136,11 +135,11 @@ For this:
 - Select the Shape Key that must be mirrored.
   - side must match **from mirror**.
 - Click on the **Mirror active/Step 1** button.
-- img
+![image](https://user-images.githubusercontent.com/22092835/61184876-2e44b400-a65b-11e9-92bd-1397c0eaf31d.png)
 - auxiliary geometry will be created, with the only Shape Key that will be active without performing extra actions - perform **Mirror Shape Key** or **Mirror Shape Key (Topology)**.
-- img
+![image](https://user-images.githubusercontent.com/22092835/61184912-8f6c8780-a65b-11e9-8946-4bd7b1ae6eb3.png)
 - Click on **Step 2**.
-- img
+![image](https://user-images.githubusercontent.com/22092835/61184919-a7dca200-a65b-11e9-9af9-e575ec94d5db.png)
 
 ## Import/Export Shape Keys.
 
