@@ -132,7 +132,7 @@ The panel for this purpose is located in the **Property editor**.
 
 ## Mirror Shape keys.
 
-In connection with some unresolved problems, it takes two steps:
+> In connection with some unresolved problems, it takes two steps.
 - выделяем форму, которую надо отеркалить
   - сторона дожна соответствовать фром миррор.
 - Клик по кнопке Мирро степ 1
@@ -143,3 +143,13 @@ In connection with some unresolved problems, it takes two steps:
 - img
 
 ## Import/Export Shape Keys.
+
+> Процедцры импорта экспорта передают информацию через текстовый файл. Поэтому импорт и экспорт можно производить между различными сценами блендера. В случае использования [Lineyka](https://github.com/volodya-renderberg/lineyka) - место хранения текстового файла привязано к ассету.
+- Экпорт импорт всех форм:
+ - img
+ - Кнопка Экспорт сохранит все формы активного объекта в текстовый файл.
+ - Кнопка Импорт загрузит те формы, которые будут присутствовать в активном объекте.
+- Экспорт импорт одной формы:
+ - img
+ - Кнопка Экспорт сохранит только активную форму в текстовый файл.
+ - Кнопка Импорт загрузит форму в активную, если форма с таким именем была ранее записана в файл.
