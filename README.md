@@ -8,6 +8,7 @@ Addon for Blender 3d v2.79 (betta)
 - [Copy Shape Key Data](#copy-shape-key-data).
 - [Mirror Shape keys](#mirror-shape-keys).
 - [Import/Export Shape Keys](#importexport-shape-keys).
+- [Troubleshooting](#troubleshooting).
 
 ## Install
 
@@ -152,3 +153,9 @@ For this:
  ![image](https://user-images.githubusercontent.com/22092835/61184976-40732200-a65c-11e9-8ad1-1267279212da.png)
  - The **Export active Shape Key** button will save only the active Shape Key to a text file.
  - The **Import active Shape Key** button will load the Shape Key into the active one if the Shape Key with the same name was previously written to the file.
+ 
+## Troubleshooting.
+- creation of auxiliary bones.
+  -
+- the creation of in-between Shape Keys.
+  - 
