@@ -82,17 +82,35 @@ The panel for this purpose is located in the **Property editor**.
 
 #### Creating an in-between Shape key:
 
-- To create an in-between Shape key, you need to set the rig to the position for which the in-between form is required.
+- To create an in-between Shape Key, you need to set the rig to the position for which the in-between form is required.
   - In our example, we will be bend about 90 degrees in the elbow.
 
 - Then it is necessary to select the Shape key for which the in-between form is created.
-  - **It matters** the Shape key for which side to choose, **left** or **right**.
-  - The designation of the side must match the designation of the side in the field **"Mirror"** and you must choose the side "from mirror".
+  - **It matters** the Shape Key for which side to choose, **left** or **right**.
+  - The designation of the side must match the designation of the side in the field **"Mirror"** and you must choose the side _"from mirror"_.
   - Only in this case in-between Shape keys will be created for both the right and left sides.
 
 - Then click on the button **"ADD In-between for active"**.
+- img
 
 #### Overview of the created in-between Shape key:
+
+- This creation method is suitable for any Shape Keys that is controlled by the **driver** and **the key frame points**.
+- The name of the created Shape Keys differs from the base name by adding a number, which is the relative distance between **ON** and **OFF** distances.
+- A new Shape Key will be created from the current state of the Shape Keys.
+- The created Shape Keys has the same driver, but receives new key frame points, with a value of **1** at the point of the corresponding relative position when creating this Shape Keys, and with values of **0** - at the points corresponding to the values equal to **1** of the nearest Shape Keyss (see picture).
+- img
+- the number of in-between Shape Keys can be any.
+- img
+
+#### in-between Shape keys removal:
+
+- Select the Shape Key to be deleted and click on the **REMOVE in-between** button.
+  - The choice of the side does not matter, both will be deleted.
+  - Key frame points of the remaining Shape Kes will be recalculated for adequate work.
+  - img
+  > In version 2.79, the animation curves themselves are not deleted, they are underlined in red and must be removed manually. In version 2.8, there is no such problem anymore.
+  - img
 
 ## Mirror Shape keys.
 
