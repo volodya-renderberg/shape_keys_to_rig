@@ -115,41 +115,41 @@ The panel for this purpose is located in the **Property editor**.
   
 ## Selected vertices to Basis state tool.
 
-- Иногда требуется вернуть часть вершин активного шейп кея в исходное состояние.
-- Для этого в режиме редактирования выделяем нужные вершины и кликаем по кнопке - ту базис
+Often it is required to return a part of the vertices of the active Shape Key to its original state.
+- To do this, in the editing mode, select the desired vertices and click on the button - **Vertices to Basis**.
 - img
-- Выбранные вершины вернутся в исходное состояние.
+- The selected vertices will return to their original state.
   
 ## Copy Shape Key Data.
 
-Иногда требуется скопировать форму из одного шейп кейя в другой.
-Для этого:
-- выделяем шейп кей который надо скопировать и кликаем по кнопке Инициализировать, рядом с кнопкой отобразится имя этого шейп кея.
+Sometimes you want to copy a form from one Shape Key to another.
+For this:
+- Select the Shape Key to be copied and click on the **Init Source** button, рядом с кнопкой отобразится имя этого шейп кея.
 - img
-- вделяем шейп кей в который производим копирование и кликаем по кнопке Копирование.
+- Select the Shape Key into which we copy and click on the **Copy to active** button.
 - img
-- данный шейп кей станет полностью соответствовать источнику.
+- this shape key will be fully consistent with the source.
 
 ## Mirror Shape keys.
 
 > In connection with some unresolved problems, it takes two steps.
-- выделяем форму, которую надо отеркалить
-  - сторона дожна соответствовать фром миррор.
-- Клик по кнопке Мирро степ 1
+- Select the Shape Key that must be mirrored.
+  - side must match **from mirror**.
+- Click on the **Mirror active/Step 1** button.
 - img
-- будет создана вспомогоательная геометрия, с единственным шейп кеем, который будет активен, не совершая лишних действий - выполнить миррор
+- auxiliary geometry will be created, with the only Shape Key that will be active without performing extra actions - perform **Mirror Shape Key** or **Mirror Shape Key (Topology)**.
 - img
-- Клик по кнопке степ 2
+- Click on **Step 2**.
 - img
 
 ## Import/Export Shape Keys.
 
-> Процедцры импорта экспорта передают информацию через текстовый файл. Поэтому импорт и экспорт можно производить между различными сценами блендера. В случае использования [Lineyka](https://github.com/volodya-renderberg/lineyka) - место хранения текстового файла привязано к ассету.
-- Экпорт импорт всех форм:
+> Export / Import procedures transfer information through an external text file. Therefore, Import and Export can be done between different scenes of the Blender. In case of use [Lineyka](https://github.com/volodya-renderberg/lineyka) - text file storage location is linked to an asset.
+- Export import all forms:
  - img
- - Кнопка Экспорт сохранит все формы активного объекта в текстовый файл.
- - Кнопка Импорт загрузит те формы, которые будут присутствовать в активном объекте.
-- Экспорт импорт одной формы:
+ - The **Export All Shape Keys** button will save all Shape Keys of the active object to a text file.
+ - The **Import All Shape Keys** button will load those Shape Keys that will be present in the active object.
+- Export import of one form:
  - img
- - Кнопка Экспорт сохранит только активную форму в текстовый файл.
- - Кнопка Импорт загрузит форму в активную, если форма с таким именем была ранее записана в файл.
+ - The **Export active Shape Key** button will save only the active Shape Key to a text file.
+ - The **Import active Shape Key** button will load the Shape Key into the active one if the Shape Key with the same name was previously written to the file.
