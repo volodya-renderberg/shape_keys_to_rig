@@ -3,9 +3,9 @@ Addon for Blender 3d 2.79 (alpha)
 
 - [Сreating Shape keys with ready-made drivers](#сreating-shape-keys-with-ready-made-drivers).
 - [In-between Shape keys tool](#in-between-shape-keys-tool).
-- [Mirror Shape keys](#).
-- [Selected vertices to Basis state tool](#).
-- [Import/Export Shape Keys](#).
+- [Mirror Shape keys](#mirror-shape-keys).
+- [Selected vertices to Basis state tool](#selected-vertices-to-basis-state-tool).
+- [Import/Export Shape Keys](#import-export-shape-keys).
 
 ## Сreating Shape keys with ready-made drivers.
 
@@ -74,4 +74,8 @@ The panel for this purpose is located in the **Property editor**.
 
 #### Overview of the created in-between Shape key:
 
+## Mirror Shape keys.
 
+## Selected vertices to Basis state tool.
+
+## Import/Export Shape Keys.
