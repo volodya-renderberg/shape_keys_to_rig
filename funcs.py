@@ -12,6 +12,7 @@ BONE_PREFIX = 'AUXBS'
 SHAPE_KEY_PREFIX = 'aux'
 SHAPE_KEYS_DATA_FILE = '.shktrig_shape_keys_data'
 TEXT_DATA_BLOCK_OF_TASK_DATA = 'current_task'
+FACTOR = 10000
 
 def set_float(self, value):
     self["zero"] = value
@@ -910,12 +911,12 @@ def remove_in_between(context, from_mirror, to_mirror):
     after_fc.keyframe_points.remove(af_p0)
     #
     for p in after_fc.keyframe_points:
-        p.co[0] = p.co[0]*1000
+        p.co[0] = p.co[0]*FACTOR
     #
-    after_fc.keyframe_points.insert(after_new_point[0]*1000, after_new_point[1])
+    after_fc.keyframe_points.insert(after_new_point[0]*FACTOR, after_new_point[1])
     #
     for p in after_fc.keyframe_points:
-        p.co[0] = p.co[0]/1000
+        p.co[0] = p.co[0]/FACTOR
     #
     # -- before
     if before_shape_key:
@@ -923,12 +924,12 @@ def remove_in_between(context, from_mirror, to_mirror):
         before_fc.keyframe_points.remove(bf_p0)
         #
         for p in before_fc.keyframe_points:
-            p.co[0] = p.co[0]*1000
+            p.co[0] = p.co[0]*FACTOR
         #
-        before_fc.keyframe_points.insert(before_new_point[0]*1000, before_new_point[1])
+        before_fc.keyframe_points.insert(before_new_point[0]*FACTOR, before_new_point[1])
         #
         for p in before_fc.keyframe_points:
-            p.co[0] = p.co[0]/1000
+            p.co[0] = p.co[0]/FACTOR
         #
         
     # -- remove
@@ -977,12 +978,12 @@ def remove_in_between(context, from_mirror, to_mirror):
         after_fc.keyframe_points.remove(af_p0)
         #
         for p in after_fc.keyframe_points:
-            p.co[0] = p.co[0]*1000
+            p.co[0] = p.co[0]*FACTOR
         #
-        after_fc.keyframe_points.insert(after_new_point[0]*1000, after_new_point[1])
+        after_fc.keyframe_points.insert(after_new_point[0]*FACTOR, after_new_point[1])
         #
         for p in after_fc.keyframe_points:
-            p.co[0] = p.co[0]/1000
+            p.co[0] = p.co[0]/FACTOR
         #
         # -- before
         if before_shape_key:
@@ -990,12 +991,12 @@ def remove_in_between(context, from_mirror, to_mirror):
             before_fc.keyframe_points.remove(bf_p0)
             #
             for p in before_fc.keyframe_points:
-                p.co[0] = p.co[0]*1000
+                p.co[0] = p.co[0]*FACTOR
             #
-            before_fc.keyframe_points.insert(before_new_point[0]*1000, before_new_point[1])
+            before_fc.keyframe_points.insert(before_new_point[0]*FACTOR, before_new_point[1])
             #
             for p in before_fc.keyframe_points:
-                p.co[0] = p.co[0]/1000
+                p.co[0] = p.co[0]/FACTOR
             #
             
         # -- remove
@@ -1149,12 +1150,12 @@ def __make_in_between(ob, new_shape_key, after_shape_key, after, before, value, 
     after_fc.keyframe_points.remove(zero_point)
     #
     for p in after_fc.keyframe_points:
-        p.co[0] = p.co[0]*1000
+        p.co[0] = p.co[0]*FACTOR
     #
-    after_fc.keyframe_points.insert(value*1000, 0)
+    after_fc.keyframe_points.insert(value*FACTOR, 0)
     #
     for p in after_fc.keyframe_points:
-        p.co[0] = p.co[0]/1000
+        p.co[0] = p.co[0]/FACTOR
     #
     
     # -- before
@@ -1165,12 +1166,12 @@ def __make_in_between(ob, new_shape_key, after_shape_key, after, before, value, 
         before_fc.keyframe_points.remove(zero_point)
         #
         for p in before_fc.keyframe_points:
-            p.co[0] = p.co[0]*1000
+            p.co[0] = p.co[0]*FACTOR
         #
-        before_fc.keyframe_points.insert(value*1000, 0)
+        before_fc.keyframe_points.insert(value*FACTOR, 0)
         #
         for p in before_fc.keyframe_points:
-            p.co[0] = p.co[0]/1000
+            p.co[0] = p.co[0]/FACTOR
         #
         
     # -- new
@@ -1183,10 +1184,10 @@ def __make_in_between(ob, new_shape_key, after_shape_key, after, before, value, 
         points = [(z , 0), (value, 1), (after_value,0)]
         print('points*:', points)
     for p in points:
-        point = new_f_curve.keyframe_points.insert(p[0]*1000, p[1])
+        point = new_f_curve.keyframe_points.insert(p[0]*FACTOR, p[1])
         point.interpolation = 'LINEAR'
     for p in new_f_curve.keyframe_points:
-        p.co[0] = p.co[0]/1000
+        p.co[0] = p.co[0]/FACTOR
     # -- remove modifier
     fmod = new_f_curve.modifiers[0]
     new_f_curve.modifiers.remove(fmod)
