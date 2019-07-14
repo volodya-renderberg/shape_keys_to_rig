@@ -5,6 +5,7 @@ Addon for Blender 3d 2.79 (alpha)
 - In-between Shape keys tool.
 - Mirror Shape keys.
 - Selected vertices to Basis state tool.
+- Import/Export Shape Keys.
 
 ## Сreating Shape keys with ready-made drivers.
 
