@@ -145,10 +145,10 @@ For this:
 
 > Export / Import procedures transfer information through an external text file. Therefore, Import and Export can be done between different scenes of the Blender. In case of use [Lineyka](https://github.com/volodya-renderberg/lineyka) - text file storage location is linked to an asset.
 - Export import all forms:
- - img
+ ![image](https://user-images.githubusercontent.com/22092835/61184987-541e8880-a65c-11e9-936b-6b86ef9a9458.png)
  - The **Export All Shape Keys** button will save all Shape Keys of the active object to a text file.
  - The **Import All Shape Keys** button will load those Shape Keys that will be present in the active object.
 - Export import of one form:
- - img
+ ![image](https://user-images.githubusercontent.com/22092835/61184976-40732200-a65c-11e9-8ad1-1267279212da.png)
  - The **Export active Shape Key** button will save only the active Shape Key to a text file.
  - The **Import active Shape Key** button will load the Shape Key into the active one if the Shape Key with the same name was previously written to the file.
