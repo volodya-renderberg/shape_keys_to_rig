@@ -156,7 +156,7 @@ For this:
  
 ## Troubleshooting.
 
-- creation of auxiliary bones.
-  -
-- the creation of in-between Shape Keys.
-  - 
+- Creation of auxiliary bones.
+  - ...
+- Creation of in-between Shape Keys.
+  - ...
