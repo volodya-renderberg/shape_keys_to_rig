@@ -155,6 +155,7 @@ For this:
  - The **Import active Shape Key** button will load the Shape Key into the active one if the Shape Key with the same name was previously written to the file.
  
 ## Troubleshooting.
+
 - creation of auxiliary bones.
   -
 - the creation of in-between Shape Keys.
