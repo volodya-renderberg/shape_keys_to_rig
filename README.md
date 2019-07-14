@@ -1,7 +1,7 @@
 # Shape_keys_to_rig
 Addon for Blender 3d 2.79 (alpha)
 
-- Сreating Shape keys with ready-made drivers.
+- [Сreating Shape keys with ready-made drivers](#сreating-shape-keys-with-ready-made-drivers).
 - In-between Shape keys tool.
 - Mirror Shape keys.
 - Selected vertices to Basis state tool.
