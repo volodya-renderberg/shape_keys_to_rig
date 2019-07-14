@@ -4,8 +4,10 @@ Addon for Blender 3d v2.79 (betta)
 - [Install](#install)
 - [Сreating Shape keys with ready-made drivers](#сreating-shape-keys-with-ready-made-drivers).
 - [In-between Shape keys tool](#in-between-shape-keys-tool).
-- [Mirror Shape keys](#mirror-shape-keys).
+- [in-between Shape keys removal](#in-between-shape-keys-removal).
 - [Selected vertices to Basis state tool](#selected-vertices-to-basis-state-tool).
+- [Copy Shape Key Data](#copy_shape_key_data).
+- [Mirror Shape keys](#mirror-shape-keys).
 - [Import/Export Shape Keys](#importexport-shape-keys).
 
 ## Install
@@ -111,9 +113,31 @@ The panel for this purpose is located in the **Property editor**.
   - img
   > In version 2.79, the animation curves themselves are not deleted, they are underlined in red and must be removed manually. In version 2.8, there is no such problem anymore.
   - img
+  
+## Selected vertices to Basis state tool.
+
+- Иногда требуется вернуть часть вершин активного шейп кея в исходное состояние.
+- Для этого в режиме редактирования выделяем нужные вершины и кликаем по кнопке - ту базис
+- Выбранные вершины вернутся в исходное состояние.
+  
+## Copy Shape Key Data.
+
+- Иногда требуется скопировать форму из одного шейп кейя в другой.
+- Для этого:
+  - выделяем шейп кей который надо скопировать и кликаем по кнопке Инициализировать, рядом с кнопкой отобразится имя этого шейп кея.
+  - вделяем шейп кей в который производим копирование и кликаем по кнопке Копирование.
+  - данный шейп кей станет полностью соответствовать источнику.
 
 ## Mirror Shape keys.
 
-## Selected vertices to Basis state tool.
+- In connection with some unresolved problems, it takes two steps.
+- выделяем форму, которую надо отеркалить
+  - сторона дожна соответствовать фром миррор.
+- Клик по кнопке Мирро степ 1
+- img
+- будет создана вспомогоательная геометрия, с единственным шейп кеем, который будет активен, не совершая лишних действий - выполнить миррор
+- img
+- Клик по кнопке степ 2
+- img
 
 ## Import/Export Shape Keys.
