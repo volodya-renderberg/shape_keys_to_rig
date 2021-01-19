@@ -8,7 +8,7 @@ bl_info = {
     "description": "Add Shape Keys to rig depending on bone position.",
     "author": "Volodya Renderberg",
     "version": (1, 0),
-    "blender": (2, 80, 0),
+    "blender": (2, 90, 0),
     "location": "View3d tools panel",
     "warning": "", # used for warning icon and text in addons panel
     "category": "Rigging"}
