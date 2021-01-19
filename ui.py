@@ -137,13 +137,17 @@ class SHAPEKEYSTORIG_edit_panel(bpy.types.Panel):
         row.operator('shapekeystorig.mirror_active_shape_key_step2')
         
         col = layout.column(align = True)
-        col.label(text='Import / Export data:')
+        col.label(text='Export data to json:')
         row = col.row(align=True)
         row.operator('shapekeystorig.import_export_data', text='Export All Shape Keys').action='export_all'
         row.operator('shapekeystorig.import_export_data', text='Export active Shape Key').action='export_single'
+        
+        col = layout.column(align = True)
+        col.label(text='Import data from json:')
         row = col.row(align=True)
         row.operator('shapekeystorig.import_export_data', text='Import All Shape Keys').action='import_all'
         row.operator('shapekeystorig.import_export_data', text='Import to active Shape Key').action='import_single'
+        col.operator('shapekeystorig.import_export_data', text='Import to active Shape Key to selected vertices').action='import_single_selected'
 
         col = layout.column(align = True)
         col.label(text='Import from Meshes:')
@@ -390,12 +394,14 @@ class SHAPEKEYSTORIG_import_export_data(bpy.types.Operator):
     def execute(self, context):
         if self.action == 'export_all':
             b,r = fn.export_shape_keys(context, all=True)
-        if self.action == 'export_single':
+        elif self.action == 'export_single':
             b,r = fn.export_shape_keys(context, all=False)
-        if self.action == 'import_all':
+        elif self.action == 'import_all':
             b,r = fn.import_shape_keys(context, all=True)
-        if self.action == 'import_single':
+        elif self.action == 'import_single':
             b,r = fn.import_shape_keys(context, all=False)
+        elif self.action == 'import_single_selected':
+            b,r = fn.import_shape_keys(context, all=False, for_selected_vertices=True)
         else:
             return{'FINISHED'}
         if b:

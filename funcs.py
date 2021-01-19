@@ -1102,7 +1102,7 @@ def export_shape_keys(context, all=True):
         
     return(True, 'Data saved')
         
-def import_shape_keys(context, all=True):
+def import_shape_keys(context, all=True, for_selected_vertices=False):
     pass
     ob = context.object
     data = read_data(data_type='Shape_keys')
@@ -1120,13 +1120,20 @@ def import_shape_keys(context, all=True):
         if not sh_key:
             return(False, 'No active Shape Key!')
         
+        bpy.ops.object.mode_set(mode='OBJECT')
+
         if sh_key.name in data.keys():
             for v in ob.data.vertices:
+                if not v.select and for_selected_vertices:
+                    continue
                 sh_key.data[v.index].co[0] = data[sh_key.name][str(v.index)][0]
                 sh_key.data[v.index].co[1] = data[sh_key.name][str(v.index)][1]
                 sh_key.data[v.index].co[2] = data[sh_key.name][str(v.index)][2]
         else:
             return(False, 'No saved data for %s' % sh_key.name)
+
+        if for_selected_vertices:
+            bpy.ops.object.mode_set(mode='EDIT')
     
     return(True, 'Data loaded')
 
