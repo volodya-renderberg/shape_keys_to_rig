@@ -12,7 +12,6 @@ BONE_PREFIX = 'AUXBS'
 SHAPE_KEY_PREFIX = 'aux'
 SHAPE_KEYS_DATA_FILE = '.shktrig_shape_keys_data'
 TEXT_DATA_BLOCK_OF_TASK_DATA = 'current_task'
-FACTOR = 10000
 
 def set_float(self, value):
     self["zero"] = value
@@ -60,7 +59,7 @@ def write_data(data, data_type='Armature', clean=False):
             rdata[key] = data[key]
         with open(path, 'w') as outfile:
             json.dump(rdata, outfile, sort_keys=True, indent=4)
-            
+
 # data_type (str) - in 'Armature', 'Mesh'
 def read_data(data_type='Armature'):
     pass
@@ -156,7 +155,7 @@ def init_shape_key(context, key_name):
 
     return(True, 'Ok: %s' % shape_key.name)
 
-def copy_shape_key(context):
+def copy_shape_key(context, for_selected_vertices=False):
     pass
     # get target
     ob = context.object
@@ -178,18 +177,50 @@ def copy_shape_key(context):
         return(False, 'Source and Target match!')
     
     # apply
+    bpy.ops.object.mode_set(mode='OBJECT')
+
     for v in ob.data.vertices:
+        if not v.select and for_selected_vertices:
+            continue
         p = source_shape_key.data[v.index].co[:]
         #print(p)
         target_shape_key.data[v.index].co[0] = p[0]
         target_shape_key.data[v.index].co[1] = p[1]
         target_shape_key.data[v.index].co[2] = p[2]
+
+    if for_selected_vertices:
+        bpy.ops.object.mode_set(mode='EDIT')
     
     # clean data
     del data['source_shape_key']
     write_data(data, clean=True)
     
     return(True, 'Shape key copied!')
+
+def insert_sk_from_selected_mesh(context):
+    objects=context.selected_objects
+    if len(objects)<2:
+        return(False, "At least two objects must be selected - source and target!")
+    target=objects[0]
+    print(f'{target.name}')
+    
+    for i, source in enumerate(objects):
+        if i==0:
+            continue
+        
+        if not source.name in target.data.shape_keys.key_blocks:
+            return(False, f'No key found by name "{source.name}"')
+        
+        target_shape_key = target.data.shape_keys.key_blocks[source.name]
+        for v in target.data.vertices:
+            p=source.data.vertices[v.index].co[:]
+            
+            target_shape_key.data[v.index].co[0] = p[0]
+            target_shape_key.data[v.index].co[1] = p[1]
+            target_shape_key.data[v.index].co[2] = p[2]
+        
+    
+    return(True, 'Import from selected object!')
 
 def make_target_bone(context, name, height, layer, from_mirror='.L', to_mirror='.R'):
     pass
@@ -217,7 +248,7 @@ def make_target_bone(context, name, height, layer, from_mirror='.L', to_mirror='
     layers = [False]*32
     layers[layer]=True
     
-    context.scene.objects.active = rig
+    context.view_layer.objects.active = rig
     bpy.ops.object.mode_set(mode='EDIT')
     new_name = '%s-%s' % (BONE_PREFIX, name)
     if new_name in rig.data.edit_bones:
@@ -317,7 +348,7 @@ def make_shape_key(context, name, from_mirror='.L', to_mirror='.R'):
         if not target[0] in bpy.data.objects:
             return(False, 'Armature with the same name("%s") not found!' % target[0])
         armature = bpy.data.objects[target[0]]
-        context.scene.objects.active = armature
+        context.view_layer.objects.active = armature
         bpy.ops.object.mode_set(mode='POSE')
         if not target[1] in armature.pose.bones:
             return(False, 'Bone with the same name("%s") not found!' % target[1])
@@ -336,7 +367,7 @@ def make_shape_key(context, name, from_mirror='.L', to_mirror='.R'):
     f_curve = new_shape_key.driver_add('value')
     drv = f_curve.driver
     drv.type = 'SCRIPTED'
-    drv.show_debug_info = True
+    #drv.show_debug_info = True
     #
     point = f_curve.keyframe_points.insert(on_distance,1)
     point.interpolation = 'LINEAR'
@@ -391,7 +422,7 @@ def make_shape_key(context, name, from_mirror='.L', to_mirror='.R'):
         f_curve = mirror_shape_key.driver_add('value')
         drv = f_curve.driver
         drv.type = 'SCRIPTED'
-        drv.show_debug_info = True
+        #drv.show_debug_info = True
         #
         point = f_curve.keyframe_points.insert(on_distance,1)
         point.interpolation = 'LINEAR'
@@ -428,7 +459,7 @@ def make_shape_key(context, name, from_mirror='.L', to_mirror='.R'):
         fmod = f_curve.modifiers[0]
         f_curve.modifiers.remove(fmod)
     
-    context.scene.objects.active = mesh
+    context.view_layer.objects.active = mesh
     
     # (6) Clead text
     for key in ['target1', 'target2', 'on_distance', 'off_distance']:
@@ -471,7 +502,7 @@ def mirror_shape_key(context, name, topology, from_mirror='.L', to_mirror='.R', 
     new_ob.data = ob.data.copy()
     new_ob.data.animation_data_clear()
 
-    bpy.context.scene.objects.link(new_ob)
+    bpy.context.scene.collection.objects.link(new_ob)
 
     new_ob.parent = None
 
@@ -487,11 +518,10 @@ def mirror_shape_key(context, name, topology, from_mirror='.L', to_mirror='.R', 
             continue
         new_ob.shape_key_remove(shkey)
     
-    ob.select=False
-    context.scene.objects.active = None
-    context.scene.objects.active = new_ob
-    #bpy.ops.object.mode_set(mode = 'EDIT')
-    #bpy.ops.object.mode_set(mode = 'OBJECT')
+    ob.select_set(False)
+    context.view_layer.objects.active = None
+    context.view_layer.objects.active = new_ob
+    new_ob.select_set(True)
     
     # выставление в 1
     for i,key in enumerate(new_ob.data.shape_keys.key_blocks.keys()):
@@ -512,7 +542,7 @@ def mirror_shape_key(context, name, topology, from_mirror='.L', to_mirror='.R', 
     write_data(wr_data, data_type='Steps', clean=True)
     return(True, 'Step1 fin, mirror "Shape key" and click "Step2"')
 
-    #new_ob.active_shape_key_index = i
+    new_ob.active_shape_key_index = i
     #context.scene.update()
     #bpy.ops.object.paths_update()
     bpy.ops.object.shape_key_mirror(use_topology=topology)
@@ -531,7 +561,7 @@ def mirror_shape_key(context, name, topology, from_mirror='.L', to_mirror='.R', 
         target_shkey.data[vtx.index].co = source_shkey.data[vtx.index].co[:]
     
     # remove new ob
-    #bpy.data.objects.remove(new_ob, do_unlink=True)
+    bpy.data.objects.remove(new_ob, do_unlink=True)
     
     return(True, 'Mirrored from "%s" to "%s"' % (source_shkey.name, target_shkey.name))
 
@@ -638,7 +668,7 @@ def in_between(context, from_mirror='.L', to_mirror='.R'):
     if num_shape_keys==1:
         attr_name = base_shape_key_name.replace('.', '_')
         exec('bpy.types.Mesh.%s =  bpy.props.FloatProperty(name = \"%s\", default=0.0)' % (attr_name, attr_name))
-        base_fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % base_shape_key_name)
+        base_fc = ob.data.shape_keys.animation_data.drivers.find('key_blocks["%s"].value' % base_shape_key_name)
         for point in base_fc.keyframe_points:
             if point.co[1]==0:
                 setattr(ob.data, attr_name, point.co[0])
@@ -880,6 +910,14 @@ def remove_in_between(context, from_mirror, to_mirror):
     for sh_key in ob.data.shape_keys.key_blocks:
         pass
         name = sh_key.name
+        # separate_name
+        c_separate_name = name.split('.')
+        if len(c_separate_name) <2:
+            continue
+        c_base_name = '%s.%s' % (c_separate_name[0], c_separate_name[1])
+        if c_base_name != base_name:
+            continue
+        
         if mirror and name.endswith(to_mr):
             continue
         elif not mirror and (name.endswith(to_mr) or name.endswith(fr_mr)):
@@ -907,34 +945,34 @@ def remove_in_between(context, from_mirror, to_mirror):
     else:
         after_new_point = (zero, 0)
     # -- after
-    after_fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % after_shape_key.name)
+    after_fc = ob.data.shape_keys.animation_data.drivers.find('key_blocks["%s"].value' % after_shape_key.name)
     after_fc.keyframe_points.remove(af_p0)
     #
     for p in after_fc.keyframe_points:
-        p.co[0] = p.co[0]*FACTOR
+        p.co[0] = p.co[0]*1000
     #
-    after_fc.keyframe_points.insert(after_new_point[0]*FACTOR, after_new_point[1])
+    after_fc.keyframe_points.insert(after_new_point[0]*1000, after_new_point[1])
     #
     for p in after_fc.keyframe_points:
-        p.co[0] = p.co[0]/FACTOR
+        p.co[0] = p.co[0]/1000
     #
     # -- before
     if before_shape_key:
-        before_fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % before_shape_key.name)
+        before_fc = ob.data.shape_keys.animation_data.drivers.find('key_blocks["%s"].value' % before_shape_key.name)
         before_fc.keyframe_points.remove(bf_p0)
         #
         for p in before_fc.keyframe_points:
-            p.co[0] = p.co[0]*FACTOR
+            p.co[0] = p.co[0]*1000
         #
-        before_fc.keyframe_points.insert(before_new_point[0]*FACTOR, before_new_point[1])
+        before_fc.keyframe_points.insert(before_new_point[0]*1000, before_new_point[1])
         #
         for p in before_fc.keyframe_points:
-            p.co[0] = p.co[0]/FACTOR
+            p.co[0] = p.co[0]/1000
         #
         
     # -- remove
-    fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % shape_key.name)
-    #ob.data.animation_data.action.fcurves.remove(fc)
+    #fc = ob.data.shape_keys.animation_data.drivers.find('key_blocks["%s"].value' % shape_key.name)
+    ob.data.shape_keys.driver_remove('key_blocks["%s"].value' % shape_key.name)
     bpy.ops.object.shape_key_remove(all=False)
     
     if mirror:
@@ -974,29 +1012,29 @@ def remove_in_between(context, from_mirror, to_mirror):
         else:
             after_new_point = (zero, 0)
         # -- after
-        after_fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % after_shape_key.name)
+        after_fc = ob.data.shape_keys.animation_data.drivers.find('key_blocks["%s"].value' % after_shape_key.name)
         after_fc.keyframe_points.remove(af_p0)
         #
         for p in after_fc.keyframe_points:
-            p.co[0] = p.co[0]*FACTOR
+            p.co[0] = p.co[0]*1000
         #
-        after_fc.keyframe_points.insert(after_new_point[0]*FACTOR, after_new_point[1])
+        after_fc.keyframe_points.insert(after_new_point[0]*1000, after_new_point[1])
         #
         for p in after_fc.keyframe_points:
-            p.co[0] = p.co[0]/FACTOR
+            p.co[0] = p.co[0]/1000
         #
         # -- before
         if before_shape_key:
-            before_fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % before_shape_key.name)
+            before_fc = ob.data.shape_keys.animation_data.drivers.find('key_blocks["%s"].value' % before_shape_key.name)
             before_fc.keyframe_points.remove(bf_p0)
             #
             for p in before_fc.keyframe_points:
-                p.co[0] = p.co[0]*FACTOR
+                p.co[0] = p.co[0]*1000
             #
-            before_fc.keyframe_points.insert(before_new_point[0]*FACTOR, before_new_point[1])
+            before_fc.keyframe_points.insert(before_new_point[0]*1000, before_new_point[1])
             #
             for p in before_fc.keyframe_points:
-                p.co[0] = p.co[0]/FACTOR
+                p.co[0] = p.co[0]/1000
             #
             
         # -- remove
@@ -1004,11 +1042,12 @@ def remove_in_between(context, from_mirror, to_mirror):
             if key == name:
                 ob.active_shape_key_index = i
                 break
-        fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % shape_key.name)
-        #ob.data.animation_data.action.fcurves.remove(fc)
+        #fc = ob.data.shape_keys.animation_data.drivers.find('key_blocks["%s"].value' % shape_key.name)
+        ob.data.shape_keys.driver_remove('key_blocks["%s"].value' % shape_key.name)
         bpy.ops.object.shape_key_remove(all=False)
     
-    return(True, 'Remove: %s' % shape_key.name)
+    #return(True, 'Remove: %s' % str(shape_key.name))
+    return(True, 'In-between Shape Key has been deleted')
 
 def selected_vertices_to_basis_shape_key(context):
     pass
@@ -1120,9 +1159,9 @@ def copy_driver(src, tgt, mirror=False):
         copy_variable(v1, d2.driver)
 
 def __make_in_between(ob, new_shape_key, after_shape_key, after, before, value, weight, base_shape_key_name, before_shape_key=False):
-    after_fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % after_shape_key.name)
+    after_fc = ob.data.shape_keys.animation_data.drivers.find('key_blocks["%s"].value' % after_shape_key.name)
     if before_shape_key:
-        before_fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % before_shape_key.name)
+        before_fc = ob.data.shape_keys.animation_data.drivers.find('key_blocks["%s"].value' % before_shape_key.name)
         
     #
     print('__make_in_between', after, before, weight)
@@ -1150,12 +1189,12 @@ def __make_in_between(ob, new_shape_key, after_shape_key, after, before, value, 
     after_fc.keyframe_points.remove(zero_point)
     #
     for p in after_fc.keyframe_points:
-        p.co[0] = p.co[0]*FACTOR
+        p.co[0] = p.co[0]*1000
     #
-    after_fc.keyframe_points.insert(value*FACTOR, 0)
+    after_fc.keyframe_points.insert(value*1000, 0)
     #
     for p in after_fc.keyframe_points:
-        p.co[0] = p.co[0]/FACTOR
+        p.co[0] = p.co[0]/1000
     #
     
     # -- before
@@ -1166,16 +1205,16 @@ def __make_in_between(ob, new_shape_key, after_shape_key, after, before, value, 
         before_fc.keyframe_points.remove(zero_point)
         #
         for p in before_fc.keyframe_points:
-            p.co[0] = p.co[0]*FACTOR
+            p.co[0] = p.co[0]*1000
         #
-        before_fc.keyframe_points.insert(value*FACTOR, 0)
+        before_fc.keyframe_points.insert(value*1000, 0)
         #
         for p in before_fc.keyframe_points:
-            p.co[0] = p.co[0]/FACTOR
+            p.co[0] = p.co[0]/1000
         #
         
     # -- new
-    new_f_curve = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % new_shape_key.name)
+    new_f_curve = ob.data.shape_keys.animation_data.drivers.find('key_blocks["%s"].value' % new_shape_key.name)
     #
     if before_shape_key:
         points = [(befo_point[0], 0), (value, 1), (after_value,0)]
@@ -1184,10 +1223,10 @@ def __make_in_between(ob, new_shape_key, after_shape_key, after, before, value, 
         points = [(z , 0), (value, 1), (after_value,0)]
         print('points*:', points)
     for p in points:
-        point = new_f_curve.keyframe_points.insert(p[0]*FACTOR, p[1])
+        point = new_f_curve.keyframe_points.insert(p[0]*1000, p[1])
         point.interpolation = 'LINEAR'
     for p in new_f_curve.keyframe_points:
-        p.co[0] = p.co[0]/FACTOR
+        p.co[0] = p.co[0]/1000
     # -- remove modifier
     fmod = new_f_curve.modifiers[0]
     new_f_curve.modifiers.remove(fmod)
@@ -1199,7 +1238,13 @@ def get_value(ob, after_shape_key_name, base_shape_key_name, weight):
     return(value)
 
 def get_two_points(ob, shape_key_name, base_shape_key_name, more=False):
-    fc = ob.data.animation_data.drivers.find('shape_keys.key_blocks["%s"].value' % shape_key_name)
+    pass
+    #data = read_data()
+    #ob = bpy.data.objects[data['mesh']]
+    #
+    f_curve = ob.data.shape_keys.animation_data.drivers.find('key_blocks["%s"].value' % shape_key_name)
+    if f_curve is None:
+        raise Exception('f_curve is None', ob.name, shape_key_name)
     # get zero
     attr_name = base_shape_key_name.replace('.', '_')
     if not attr_name in dir(ob.data):
@@ -1208,7 +1253,7 @@ def get_two_points(ob, shape_key_name, base_shape_key_name, more=False):
     print('zero: %s' % str(zero))
     # get points
     p1, p2 = None, None
-    for point in fc.keyframe_points:
+    for point in f_curve.keyframe_points:
         if point.co[1]==1:
             p2=point
         elif point.co[1]==0:

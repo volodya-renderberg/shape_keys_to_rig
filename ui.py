@@ -11,7 +11,7 @@ def set_mirror_sides():
 class SHAPEKEYSTORIG_create_panel(bpy.types.Panel):
     bl_label = 'Shape Key To Rig - Create:'
     bl_space_type = "VIEW_3D"
-    bl_region_type = "TOOLS"
+    bl_region_type = "UI"
     bl_category = 'ShKtRig'
     #bl_options = {'DEFAULT_CLOSED'}
 
@@ -22,58 +22,58 @@ class SHAPEKEYSTORIG_create_panel(bpy.types.Panel):
         
         col = layout.column(align = True)
         row = col.row(align = True)
-        row.label('')
+        row.label(text='')
         row.operator('shapekeystorig.manual', text='', icon='QUESTION')
         
         col = layout.column(align = True)
         col.prop(context.scene, "mirror_sides")
         
-        layout.label('Make Auxiliary Bones:')
+        layout.label(text='Make Auxiliary Bones:')
         col = layout.column(align = True)
         row = col.row(align = True)
         row.operator('shapekeystorig.init', text='Init Partent Bone').action = 'init_parent_bone'
         if 'armature' in data:
-            row.label('%s:%s' % (str(data.get('armature')), str(data.get('parent_bone'))))
+            row.label(text='%s:%s' % (str(data.get('armature')), str(data.get('parent_bone'))))
         col.operator('shapekeystorig.make_target_bone').height=0.01
         
-        layout.label('Make Shape Keys:')
+        layout.label(text='Make Shape Keys:')
         col = layout.column(align = True)
         row = col.row(align = True)
         row.operator('shapekeystorig.init', text='Init Mesh').action='init_mesh'
         if 'mesh' in data:
-            row.label(str(data.get('mesh')))
+            row.label(text=str(data.get('mesh')))
 	#
         row = col.row(align = True)
         row.operator('shapekeystorig.init', text='Init Root (bone)').action='root_bone'
         if 'root_bone' in data:
-            row.label('%s:%s' % (str(data.get('root_bone')[0]), str(data.get('root_bone')[1])))
+            row.label(text='%s:%s' % (str(data.get('root_bone')[0]), str(data.get('root_bone')[1])))
         #
         #col = layout.column(align = True)
         row = col.row(align = True)
         row.operator('shapekeystorig.init', text='Init Target-1 (bone.head)').action='target1'
         if 'target1' in data:
-            row.label('%s:%s' % (str(data.get('target1')[0]), str(data.get('target1')[1])))
+            row.label(text='%s:%s' % (str(data.get('target1')[0]), str(data.get('target1')[1])))
         #
         #col = layout.column(align = True)
         row = col.row(align = True)
         row.operator('shapekeystorig.init', text='Init Target-2 (bone.head)').action='target2'
         if 'target2' in data:
-            row.label('%s:%s' % (str(data.get('target2')[0]), str(data.get('target2')[1])))
+            row.label(text='%s:%s' % (str(data.get('target2')[0]), str(data.get('target2')[1])))
             
         col = layout.column(align = True)
         row = col.row(align = True)
         row.operator('shapekeystorig.init', text='Init distance to ON').action='on_distance'
         if 'on_distance' in data:
-            row.label(str(data.get('on_distance')))
+            row.label(text=str(data.get('on_distance')))
         row = col.row(align = True)
         row.operator('shapekeystorig.init', text='Init distance to OFF').action='off_distance'
         if 'off_distance' in data:
-            row.label(str(data.get('off_distance')))
+            row.label(text=str(data.get('off_distance')))
             
         col = layout.column(align = True)
         col.operator('shapekeystorig.make_shape_key')
         
-        #layout.label('Off')
+        #layout.label(text='Off')
         #col = layout.column(align = True)
         #col.operator('shapekeystorig.unreg')
         
@@ -102,36 +102,42 @@ class SHAPEKEYSTORIG_edit_panel(bpy.types.Panel):
         
         col = layout.column(align = True)
         row = col.row(align = True)
-        row.label('')
+        row.label(text='')
         row.operator('shapekeystorig.manual', text='', icon='QUESTION')
         
         col = layout.column(align = True)
         col.prop(context.scene, "mirror_sides")
         
         col = layout.column(align = True)
-        col.operator('shapekeystorig.in_between', text='ADD In-between for active')
+        row = col.row(align = True)
+        row.operator('shapekeystorig.in_between', text='ADD In-between for active')
+        #
+        #col = layout.column(align = True)
+        row.operator('shapekeystorig.remove_in_between', text='REMOVE In-between')
         
         col = layout.column(align = True)
-        col.operator('shapekeystorig.remove_in_between', text='REMOVE In-between')
+        col.label(text='Copy Shape Key:')
+        row = col.row(align = True)
+        row.operator('shapekeystorig.init', text='Init Source').action='source_shape_key'
+        if 'source_shape_key' in data:
+            row.label(text=str(data.get('source_shape_key')))
+
+        col = layout.column(align = True)
+        row = col.row(align = True)
+        row.operator('shapekeystorig.copy_shape_key').action="All"
+        row.operator('shapekeystorig.copy_shape_key', text = "To selected vertices").action="selected"
         
         col = layout.column(align = True)
         col.operator('shapekeystorig.vertices_to_basis', text='Vertices to Basis')
         
         col = layout.column(align = True)
-        col.label('Copy Shape Key:')
-        row = col.row(align = True)
-        row.operator('shapekeystorig.init', text='Init Source').action='source_shape_key'
-        if 'source_shape_key' in data:
-            row.label(str(data.get('source_shape_key')))
-        row.operator('shapekeystorig.copy_shape_key')
-        
-        col = layout.column(align = True)
+        col.label(text='Mirror Shape Key:')
         row = col.row(align=True)
         row.operator('shapekeystorig.mirror_active_shape_key', text='MIRROR active /Step 1')
         row.operator('shapekeystorig.mirror_active_shape_key_step2')
         
         col = layout.column(align = True)
-        col.label(text='Import / Export:')
+        col.label(text='Import / Export data:')
         row = col.row(align=True)
         row.operator('shapekeystorig.import_export_data', text='Export All Shape Keys').action='export_all'
         row.operator('shapekeystorig.import_export_data', text='Export active Shape Key').action='export_single'
@@ -139,11 +145,16 @@ class SHAPEKEYSTORIG_edit_panel(bpy.types.Panel):
         row.operator('shapekeystorig.import_export_data', text='Import All Shape Keys').action='import_all'
         row.operator('shapekeystorig.import_export_data', text='Import to active Shape Key').action='import_single'
 
+        col = layout.column(align = True)
+        col.label(text='Import from Meshes:')
+        row = col.row(align=True)
+        row.operator('shapekeystorig.insert_sk_from_selected_mesh', text='Import from Selected Objects')
+
 class SHAPEKEYSTORIG_init(bpy.types.Operator):
     bl_idname = "shapekeystorig.init"
     bl_label = "Init"
     
-    action = bpy.props.StringProperty()
+    action: bpy.props.StringProperty()
 
     def execute(self, context):
         b=False
@@ -175,9 +186,9 @@ class SHAPEKEYSTORIG_make_target_bone(bpy.types.Operator):
     bl_idname = "shapekeystorig.make_target_bone"
     bl_label = "Make Bone"
     
-    name = bpy.props.StringProperty(name='Name:')
-    height = bpy.props.FloatProperty(name='Height Bone')
-    layer = bpy.props.IntProperty(name='Layer', default=27)
+    name: bpy.props.StringProperty(name='Name:')
+    height: bpy.props.FloatProperty(name='Height Bone')
+    layer: bpy.props.IntProperty(name='Layer', default=27)
     #from_mirror = bpy.props.StringProperty(name='From Mirror:', default='.L')
     #to_mirror = bpy.props.StringProperty(name='To Mirror:', default='.R')
 
@@ -198,7 +209,7 @@ class SHAPEKEYSTORIG_make_shape_key(bpy.types.Operator):
     bl_idname = "shapekeystorig.make_shape_key"
     bl_label = "Make Shape Key"
     
-    name = bpy.props.StringProperty(name='Name:')
+    name: bpy.props.StringProperty(name='Name:')
     #from_mirror = bpy.props.StringProperty(name='From Mirror:', default='.L')
     #to_mirror = bpy.props.StringProperty(name='To Mirror:', default='.R')
     
@@ -218,10 +229,10 @@ class SHAPEKEYSTORIG_mirror_shape_key(bpy.types.Operator):
     bl_idname = "shapekeystorig.mirror_shape_key"
     bl_label = "Mirror Shape Key"
     
-    name = bpy.props.StringProperty(name='Name:')
+    name: bpy.props.StringProperty(name='Name:')
     #from_mirror = bpy.props.StringProperty(name='From Mirror:', default='.L')
     #to_mirror = bpy.props.StringProperty(name='To Mirror:', default='.R')
-    topology = bpy.props.BoolProperty(name='Use Topology', default=False)
+    topology: bpy.props.BoolProperty(name='Use Topology', default=False)
     
     def execute(self, context):
         from_mirror, to_mirror = settings.DATA[context.scene.mirror_sides]
@@ -241,7 +252,7 @@ class SHAPEKEYSTORIG_mirror_active_shape_key(bpy.types.Operator):
     
     #from_mirror = bpy.props.StringProperty(name='From Mirror:', default='.L')
     #to_mirror = bpy.props.StringProperty(name='To Mirror:', default='.R')
-    topology = bpy.props.BoolProperty(name='Use Topology', default=False)
+    topology: bpy.props.BoolProperty(name='Use Topology', default=False)
     
     def execute(self, context):
         from_mirror, to_mirror = settings.DATA[context.scene.mirror_sides]
@@ -261,10 +272,27 @@ class SHAPEKEYSTORIG_mirror_active_shape_key(bpy.types.Operator):
     
 class SHAPEKEYSTORIG_copy_shape_key(bpy.types.Operator):
     bl_idname = "shapekeystorig.copy_shape_key"
-    bl_label = "Copy to active"
+    bl_label = "Paste to active"
+
+    action: bpy.props.StringProperty()
     
     def execute(self, context):
-        b,r = fn.copy_shape_key(context)
+        if self.action == "selected":
+            b,r = fn.copy_shape_key(context, for_selected_vertices=True)
+        else:
+            b,r = fn.copy_shape_key(context)
+        if b:
+            self.report({'INFO'}, r)
+        else:
+            self.report({'WARNING'}, r)
+        return{'FINISHED'}
+
+class SHAPEKEYSTORIG_insert_sk_from_selected_mesh(bpy.types.Operator):
+    bl_idname = "shapekeystorig.insert_sk_from_selected_mesh"
+    bl_label = "Insert from selected mesh"
+    
+    def execute(self, context):
+        b,r = fn.insert_sk_from_selected_mesh(context)
         if b:
             self.report({'INFO'}, r)
         else:
@@ -352,12 +380,12 @@ class SHAPEKEYSTORIG_unreg(bpy.types.Operator):
     def execute(self, context):
         unregister()
         return{'FINISHED'}
-
+    
 class SHAPEKEYSTORIG_import_export_data(bpy.types.Operator):
     bl_idname = "shapekeystorig.import_export_data"
     bl_label = "Import / Export data"
     
-    action= bpy.props.StringProperty()
+    action: bpy.props.StringProperty()
 
     def execute(self, context):
         if self.action == 'export_all':
@@ -391,6 +419,7 @@ def register():
     bpy.utils.register_class(SHAPEKEYSTORIG_vertices_to_basis)
     bpy.utils.register_class(SHAPEKEYSTORIG_manual)
     bpy.utils.register_class(SHAPEKEYSTORIG_copy_shape_key)
+    bpy.utils.register_class(SHAPEKEYSTORIG_insert_sk_from_selected_mesh)
     bpy.utils.register_class(SHAPEKEYSTORIG_import_export_data)
     # unreg
     bpy.utils.register_class(SHAPEKEYSTORIG_unreg)
@@ -410,6 +439,7 @@ def unregister():
     bpy.utils.unregister_class(SHAPEKEYSTORIG_vertices_to_basis)
     bpy.utils.unregister_class(SHAPEKEYSTORIG_manual)
     bpy.utils.unregister_class(SHAPEKEYSTORIG_copy_shape_key)
+    bpy.utils.unregister_class(SHAPEKEYSTORIG_insert_sk_from_selected_mesh)
     bpy.utils.unregister_class(SHAPEKEYSTORIG_import_export_data)
     # unreg
     bpy.utils.unregister_class(SHAPEKEYSTORIG_unreg)

@@ -131,9 +131,9 @@ Often it is required to return a part of the vertices of the active Shape Key to
 Sometimes you want to copy a form from one Shape Key to another.
 For this:
 - Select the Shape Key to be copied and click on the **Init Source** button, the name of this shape key will be displayed next to the button.
-![image](https://user-images.githubusercontent.com/22092835/61184847-e6be2800-a65a-11e9-966d-dbe9960808df.png)
-- Select the Shape Key into which we copy and click on the **Copy to active** button.
-![image](https://user-images.githubusercontent.com/22092835/61184860-081f1400-a65b-11e9-84f1-8fa0a6cccd8a.png)
+![image](https://user-images.githubusercontent.com/22092835/103137257-59e51e00-46d8-11eb-9bde-db16f86ffaad.png)
+- Select the Shape Key into which we copy and click on the **Paste to active** button or click on the **To selected vertices** to apply only to selected vertices.
+![image](https://user-images.githubusercontent.com/22092835/103137171-b09e2800-46d7-11eb-8a46-c0ea1212fcb5.png)
 - this shape key will be fully consistent with the source.
 
 ## Mirror Shape keys.
