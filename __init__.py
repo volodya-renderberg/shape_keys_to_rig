@@ -11,6 +11,7 @@ bl_info = {
     "blender": (2, 90, 0),
     "location": "View3d tools panel",
     "warning": "", # used for warning icon and text in addons panel
+    "doc_url":"https://github.com/volodya-renderberg/shape_keys_to_rig/blob/master/README.md",
     "category": "Rigging"}
 
 if "bpy" in locals():
