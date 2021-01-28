@@ -21,12 +21,12 @@ Running the following commands in a linux terminal:
 ```
 cd ~/.config/blender/2.79/scripts/addons
 git clone https://github.com/volodya-renderberg/shape_keys_to_rig.git
+git checkout blender27
 ```
-for blender version 2.8:
+for blender version 2.8 and higher:
 ```
 cd ~/.config/blender/2.80/scripts/addons
 git clone https://github.com/volodya-renderberg/shape_keys_to_rig.git
-git checkout blender28
 ```
 and to update the addon to the latest version execute these commands:
 ```
