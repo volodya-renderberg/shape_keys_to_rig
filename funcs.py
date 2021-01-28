@@ -47,7 +47,7 @@ def write_data(data, data_type='Armature', clean=False):
     elif data_type == 'Shape_keys':
         path = os.path.join(root, SHAPE_KEYS_DATA_FILE)
     else:
-        return
+        return (False, "Unknown type!")
     #
     if not os.path.exists(path) or clean:
         with open(path, 'w') as outfile:
@@ -59,6 +59,8 @@ def write_data(data, data_type='Armature', clean=False):
             rdata[key] = data[key]
         with open(path, 'w') as outfile:
             json.dump(rdata, outfile, sort_keys=True, indent=4)
+
+    return (True, "Data saved to: %s" % path)
 
 # data_type (str) - in 'Armature', 'Mesh'
 def read_data(data_type='Armature'):
@@ -1090,17 +1092,15 @@ def export_shape_keys(context, all=True):
         for v in ob.data.vertices:
             shape_keys[sh_key.name][v.index] = tuple(sh_key.data[v.index].co[:])
     
-        write_data(shape_keys, data_type='Shape_keys')
+        return write_data(shape_keys, data_type='Shape_keys')
     
-    if all:
+    elif all:
         for sh_key in ob.data.shape_keys.key_blocks:
             shape_keys[sh_key.name]={}
             for v in ob.data.vertices:
                 shape_keys[sh_key.name][v.index] = tuple(sh_key.data[v.index].co[:])
     
-        write_data(shape_keys, data_type='Shape_keys', clean=True)
-        
-    return(True, 'Data saved')
+        return write_data(shape_keys, data_type='Shape_keys', clean=True)
         
 def import_shape_keys(context, all=True, for_selected_vertices=False):
     pass
