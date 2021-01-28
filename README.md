@@ -30,7 +30,7 @@ git clone https://github.com/volodya-renderberg/shape_keys_to_rig.git
 ```
 and to update the addon to the latest version execute these commands:
 ```
-cd ~/.config/blender/2.79/scripts/addons/shape_keys_to_rig
+cd ~/.config/blender/2.80/scripts/addons/shape_keys_to_rig
 git fetch
 git pull
 ```
