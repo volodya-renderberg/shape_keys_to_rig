@@ -15,6 +15,13 @@ TEXT_DATA_BLOCK_OF_TASK_DATA = 'current_task'
 
 def set_float(self, value):
     self["zero"] = value
+
+def get_meta():
+    if bpy.data.filepath:
+        meta_path = os.path.join(os.path.dirname(bpy.data.filepath), 'meta')
+        if os.path.exists(meta_path):
+            return meta_path
+    return tempfile.gettempdir()
     
 def get_root():
     root = activity_path = None
@@ -27,9 +34,9 @@ def get_root():
             if os.path.exists(activity_path):
                 root = activity_path
             else:
-                root = tempfile.gettempdir()
+                root = get_meta()
     else:
-        root = tempfile.gettempdir()
+        root = get_meta()
     return(root)
 
 # data_type (str) - in 'Armature', 'Mesh', 'Steps'
