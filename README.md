@@ -6,6 +6,7 @@ Addon for Blender 3d v2.90 (betta)
 - [In-between Shape keys tool](#in-between-shape-keys-tool).
 - [Selected vertices to Basis state tool](#selected-vertices-to-basis-state-tool).
 - [Copy Shape Key Data](#copy-shape-key-data).
+- [Subtraction Shape Key Data](#subtraction-shape-key-data)
 - [Mirror Shape keys](#mirror-shape-keys).
 - [Import/Export Shape Keys](#importexport-shape-keys).
 - [Troubleshooting](#troubleshooting).
