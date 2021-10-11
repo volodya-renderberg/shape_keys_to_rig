@@ -164,6 +164,36 @@ def init_shape_key(context, key_name):
 
     return(True, 'Ok: %s' % shape_key.name)
 
+def subtraction_shape_key(context, for_selected_vertices=False):
+    ob = context.object
+    target_shape_key = ob.active_shape_key
+    base_shape_key = target_shape_key.relative_key
+    
+    # get source
+    data = read_data()
+    if not data.get('source_shape_key'):
+        return(False, 'Source Shape Key not defined!')
+    if not data.get('source_shape_key') in ob.data.shape_keys.key_blocks:
+        return(False, 'No source Shape Key with this name("%s") was found!' % data.get('source_shape_key'))
+    source_shape_key = ob.data.shape_keys.key_blocks[data.get('source_shape_key')]
+    
+    if not target_shape_key:
+        return(False, 'No active Shape key')
+    
+    for v in ob.data.vertices:
+        if for_selected_vertices and not v.select:
+            continue
+        b_p=base_shape_key.data[v.index].co[:]
+        s_p=source_shape_key.data[v.index].co[:]
+        t_p=target_shape_key.data[v.index].co[:]
+        
+        for i in range(3):
+            delta=s_p[i]-b_p[i]
+            value=t_p[i]-delta
+            target_shape_key.data[v.index].co[i] = value
+
+    return(True, f"subtraction \"{source_shape_key.name}\" from \"{target_shape_key.name}\"")
+
 def copy_shape_key(context, for_selected_vertices=False):
     pass
     # get target

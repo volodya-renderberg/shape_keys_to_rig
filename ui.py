@@ -126,6 +126,9 @@ class SHAPEKEYSTORIG_edit_panel(bpy.types.Panel):
         row = col.row(align = True)
         row.operator('shapekeystorig.copy_shape_key').action="All"
         row.operator('shapekeystorig.copy_shape_key', text = "To selected vertices").action="selected"
+        row = col.row(align = True)
+        row.operator('shapekeystorig.subtraction_shape_key').action="All"
+        row.operator('shapekeystorig.subtraction_shape_key', text = "To selected vertices").action="selected"
         
         col = layout.column(align = True)
         col.operator('shapekeystorig.vertices_to_basis', text='Vertices to Basis')
@@ -291,6 +294,23 @@ class SHAPEKEYSTORIG_copy_shape_key(bpy.types.Operator):
             self.report({'WARNING'}, r)
         return{'FINISHED'}
 
+class SHAPEKEYSTORIG_subtraction_shape_key(bpy.types.Operator):
+    bl_idname = "shapekeystorig.subtraction_shape_key"
+    bl_label = "Subtraction from active"
+
+    action: bpy.props.StringProperty()
+    
+    def execute(self, context):
+        if self.action == "selected":
+            b,r = fn.subtraction_shape_key(context, for_selected_vertices=True)
+        else:
+            b,r = fn.subtraction_shape_key(context)
+        if b:
+            self.report({'INFO'}, r)
+        else:
+            self.report({'WARNING'}, r)
+        return{'FINISHED'}
+
 class SHAPEKEYSTORIG_insert_sk_from_selected_mesh(bpy.types.Operator):
     bl_idname = "shapekeystorig.insert_sk_from_selected_mesh"
     bl_label = "Insert from selected mesh"
@@ -427,6 +447,7 @@ def register():
     bpy.utils.register_class(SHAPEKEYSTORIG_copy_shape_key)
     bpy.utils.register_class(SHAPEKEYSTORIG_insert_sk_from_selected_mesh)
     bpy.utils.register_class(SHAPEKEYSTORIG_import_export_data)
+    bpy.utils.register_class(SHAPEKEYSTORIG_subtraction_shape_key)
     # unreg
     bpy.utils.register_class(SHAPEKEYSTORIG_unreg)
     set_mirror_sides()
@@ -447,5 +468,6 @@ def unregister():
     bpy.utils.unregister_class(SHAPEKEYSTORIG_copy_shape_key)
     bpy.utils.unregister_class(SHAPEKEYSTORIG_insert_sk_from_selected_mesh)
     bpy.utils.unregister_class(SHAPEKEYSTORIG_import_export_data)
+    bpy.utils.unregister_class(SHAPEKEYSTORIG_subtraction_shape_key)
     # unreg
     bpy.utils.unregister_class(SHAPEKEYSTORIG_unreg)
