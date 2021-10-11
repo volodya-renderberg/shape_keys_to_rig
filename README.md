@@ -136,6 +136,13 @@ For this:
 ![image](https://user-images.githubusercontent.com/22092835/103137171-b09e2800-46d7-11eb-8a46-c0ea1212fcb5.png)
 - this shape key will be fully consistent with the source.
 
+## Subtraction Shape Key Data.
+
+Sometimes you need to subtract one shape from another when creating corrective shapes.
+For this:
+- Select the Shape Key to be copied and click on the **Init Source** button, the name of this shape key will be displayed next to the button.
+- Select the Shape Key from which we subtract and click on the **Subtraction from active** button or click on the **To selected vertices** to apply only to selected vertices.
+
 ## Mirror Shape keys.
 
 > In connection with some unresolved problems, it takes two steps.
