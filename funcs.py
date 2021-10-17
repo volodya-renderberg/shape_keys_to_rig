@@ -1145,12 +1145,23 @@ def import_shape_keys(context, all=True, for_selected_vertices=False):
     data = read_data(data_type='Shape_keys')
     
     if all:
-        for sh_key in ob.data.shape_keys.key_blocks:
-            if sh_key.name in data.keys():
-                for v in ob.data.vertices:
-                    sh_key.data[v.index].co[0] = data[sh_key.name][str(v.index)][0]
-                    sh_key.data[v.index].co[1] = data[sh_key.name][str(v.index)][1]
-                    sh_key.data[v.index].co[2] = data[sh_key.name][str(v.index)][2]
+        # for sh_key in ob.data.shape_keys.key_blocks:
+        #     if sh_key.name in data.keys():
+        #         for v in ob.data.vertices:
+        #             sh_key.data[v.index].co[0] = data[sh_key.name][str(v.index)][0]
+        #             sh_key.data[v.index].co[1] = data[sh_key.name][str(v.index)][1]
+        #             sh_key.data[v.index].co[2] = data[sh_key.name][str(v.index)][2]
+        for name in data.keys():
+            if name=="Basis":
+                continue
+            if not name in ob.data.shape_keys.key_blocks:
+                sh_key=ob.shape_key_add(name=name, from_mix=False)
+            else:
+                sh_key=ob.data.shape_keys.key_blocks[name]
+            for v in ob.data.vertices:
+                sh_key.data[v.index].co[0] = data[sh_key.name][str(v.index)][0]
+                sh_key.data[v.index].co[1] = data[sh_key.name][str(v.index)][1]
+                sh_key.data[v.index].co[2] = data[sh_key.name][str(v.index)][2]
                     
     if not all:
         sh_key = ob.active_shape_key
